@@ -1,0 +1,50 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "particle": "tc:blocks/distil_on_front",
+    "top": "tc:blocks/distil_top",
+    "bottom": "tc:blocks/distil_bottom",
+    "side": "tc:blocks/distil_side",
+    "front": "tc:blocks/distil_on_front"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#bottom",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#top",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#front",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#side",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#side",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#side",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

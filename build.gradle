@@ -1,0 +1,70 @@
+plugins {
+    id 'java'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.2'
+}
+
+version = "4.4.1-1.12.2"
+group = "traincraft"
+base { archivesName.set("Traincraft") }
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+        vendor.set(JvmVendorSpec.AZUL)
+    }
+}
+
+minecraft {
+    mcVersion.set("1.12.2")
+    mcpMappingChannel.set("stable")
+    mcpMappingVersion.set("39")
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "Curse Maven"
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+}
+
+dependencies {
+    // BuildCraft 8.0.0 (latest 1.12.2 release, CurseForge project 61811, file 6376391,
+    // https://www.curseforge.com/minecraft/mc-mods/buildcraft/files/6376391).
+    // The upstream "-all-" jar has 2 duplicate zip entries (META-INF/fml_cache_annotation.json,
+    // META-INF/fml_cache_class_versions.json - an artifact of CurseForge's multi-submodule merge)
+    // which makes RetroFuturaGradle's deobfuscation transform choke with a ZipException. Re-packed
+    // a deduplicated copy (last entry wins, matching normal zip/classloader semantics) into
+    // libs/buildcraft-8.0.0-deduped.jar; contents are otherwise identical to the CurseForge release.
+    // Pipes/tools compat (IToolWrench) - see train.common.items.ItemWrench
+    compileOnly rfg.deobf(files("libs/buildcraft-8.0.0-deduped.jar"))
+
+    // Railcraft 12.1.0-beta-8 (latest 1.12.2 release, CurseForge project 51195, file 3853491,
+    // https://www.curseforge.com/minecraft/mc-mods/railcraft/files/3853491)
+    // Rails/carts/signals compat - see train.common.core.plugins.PluginRailcraft and train.common.blocks.tracks.*
+    compileOnly rfg.deobf("curse.maven:railcraft-51195:3853491")
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    inputs.property "version", project.version
+    inputs.property "mcversion", "1.12.2"
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': "1.12.2"
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.fork = true
+    options.forkOptions.memoryMaximumSize = '4g'
+    options.compilerArgs << '-Xmaxerrs' << '2000'
+}

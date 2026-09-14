@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "tc:items/trains/bap_pullman_standard_lightweight_center_diner_icom"
+  }
+}

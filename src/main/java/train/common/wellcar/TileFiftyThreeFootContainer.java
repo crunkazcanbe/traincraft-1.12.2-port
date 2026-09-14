@@ -1,0 +1,188 @@
+package train.common.wellcar;
+
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.NonNullList;
+import net.minecraftforge.common.util.Constants;
+
+import java.util.ArrayList;
+
+public class TileFiftyThreeFootContainer extends TileEntity implements IInventory {
+    public ItemStack[] inventory;
+    public int directionPlaced;
+    public int currentColor = 0;
+
+    public TileFiftyThreeFootContainer() {
+        this.inventory = new ItemStack[this.getSizeInventory()];
+    }
+
+    public TileFiftyThreeFootContainer(int pl) {
+        this.inventory = new ItemStack[this.getSizeInventory()];
+        this.directionPlaced = pl;
+    }
+
+    @Override
+    public int getSizeInventory() {
+        return 45;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        for (ItemStack stack : inventory) {
+            if (stack != null && !stack.isEmpty()) return false;
+        }
+        return true;
+    }
+
+    @Override
+    public ItemStack getStackInSlot(int index) {
+        if (index < 0 || index >= this.getSizeInventory())
+            return ItemStack.EMPTY;
+        return this.inventory[index];
+    }
+
+    @Override
+    public ItemStack decrStackSize(int index, int count) {
+        if (this.getStackInSlot(index) != null && !this.getStackInSlot(index).isEmpty()) {
+            ItemStack itemstack;
+            if (this.getStackInSlot(index).getCount() <= count) {
+                itemstack = this.getStackInSlot(index);
+                this.setInventorySlotContents(index, ItemStack.EMPTY);
+                this.markDirty();
+                return itemstack;
+            } else {
+                itemstack = this.getStackInSlot(index).splitStack(count);
+                if (this.getStackInSlot(index).getCount() <= 0) {
+                    this.setInventorySlotContents(index, ItemStack.EMPTY);
+                } else {
+                    this.setInventorySlotContents(index, this.getStackInSlot(index));
+                }
+                this.markDirty();
+                return itemstack;
+            }
+        } else {
+            return ItemStack.EMPTY;
+        }
+    }
+
+    @Override
+    public ItemStack removeStackFromSlot(int index) {
+        ItemStack stack = this.getStackInSlot(index);
+        this.setInventorySlotContents(index, ItemStack.EMPTY);
+        return stack;
+    }
+
+    @Override
+    public void setInventorySlotContents(int index, ItemStack stack) {
+        if (index < 0 || index >= this.getSizeInventory())
+            return;
+        if (stack != null && stack.getCount() > this.getInventoryStackLimit())
+            stack.setCount(this.getInventoryStackLimit());
+        if (stack != null && stack.getCount() == 0)
+            stack = ItemStack.EMPTY;
+        this.inventory[index] = stack;
+        this.markDirty();
+    }
+
+    @Override
+    public String getName() {
+        return "53 Foot Container";
+    }
+
+    @Override
+    public boolean hasCustomName() {
+        return false;
+    }
+
+    @Override
+    public int getInventoryStackLimit() {
+        return 64;
+    }
+
+    @Override
+    public boolean isUsableByPlayer(EntityPlayer player) {
+        return true;
+    }
+
+    @Override
+    public void openInventory(EntityPlayer player) {
+    }
+
+    @Override
+    public void closeInventory(EntityPlayer player) {
+    }
+
+    @Override
+    public boolean isItemValidForSlot(int index, ItemStack stack) {
+        return true;
+    }
+
+    @Override
+    public int getField(int id) { return 0; }
+    @Override
+    public void setField(int id, int value) {}
+    @Override
+    public int getFieldCount() { return 0; }
+    @Override
+    public void clear() {
+        for (int i = 0; i < inventory.length; i++) inventory[i] = ItemStack.EMPTY;
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound nbt) {
+        super.readFromNBT(nbt);
+        NBTTagList list = nbt.getTagList("Items", Constants.NBT.TAG_COMPOUND);
+        inventory = new ItemStack[getSizeInventory()];
+        for (int i = 0; i < list.tagCount(); ++i) {
+            NBTTagCompound comp = list.getCompoundTagAt(i);
+            int j = comp.getByte("Slot") & 255;
+            if (j >= 0 && j < inventory.length) {
+                inventory[j] = new ItemStack(comp);
+            }
+        }
+        currentColor = nbt.getInteger("currentColor");
+    }
+
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        super.writeToNBT(nbt);
+        NBTTagList list = new NBTTagList();
+        for (int i = 0; i < inventory.length; ++i) {
+            if (inventory[i] != null && !inventory[i].isEmpty()) {
+                NBTTagCompound comp = new NBTTagCompound();
+                comp.setByte("Slot", (byte) i);
+                inventory[i].writeToNBT(comp);
+                list.appendTag(comp);
+            }
+        }
+        nbt.setTag("Items", list);
+        nbt.setInteger("currentColor", currentColor);
+        nbt.setString("currentColorString", getAvailableColors().get(currentColor));
+        return nbt;
+    }
+
+    public ArrayList<String> getAvailableColors() {
+        ArrayList<String> leColors = new ArrayList<>();
+        leColors.add("generic");
+        leColors.add("PS");
+        leColors.add("cosco");
+        leColors.add("BN1");
+        leColors.add("BN2");
+        leColors.add("mannco");
+        return leColors;
+    }
+
+    public void goToNextColor() {
+        if (getAvailableColors().size() > 0) {
+            if (currentColor > getAvailableColors().size() - 5) {
+                currentColor = 0;
+            } else {
+                currentColor++;
+            }
+        }
+    }
+}

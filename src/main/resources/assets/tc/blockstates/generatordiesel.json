@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "data=0": {
+      "model": "tc:generatordiesel"
+    },
+    "data=1": {
+      "model": "tc:generatordiesel"
+    },
+    "data=2": {
+      "model": "tc:generatordiesel"
+    },
+    "data=3": {
+      "model": "tc:generatordiesel"
+    },
+    "data=4": {
+      "model": "tc:generatordiesel"
+    },
+    "data=5": {
+      "model": "tc:generatordiesel"
+    },
+    "data=6": {
+      "model": "tc:generatordiesel"
+    },
+    "data=7": {
+      "model": "tc:generatordiesel"
+    },
+    "data=8": {
+      "model": "tc:generatordiesel"
+    },
+    "data=9": {
+      "model": "tc:generatordiesel"
+    },
+    "data=10": {
+      "model": "tc:generatordiesel"
+    },
+    "data=11": {
+      "model": "tc:generatordiesel"
+    },
+    "data=12": {
+      "model": "tc:generatordiesel"
+    },
+    "data=13": {
+      "model": "tc:generatordiesel"
+    },
+    "data=14": {
+      "model": "tc:generatordiesel"
+    },
+    "data=15": {
+      "model": "tc:generatordiesel"
+    }
+  }
+}

@@ -1,0 +1,713 @@
+package train.common.entity.zeppelin;
+
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.block.material.Material;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
+import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityTNTPrimed;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntityFurnace;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
+import train.common.Traincraft;
+import train.common.core.handlers.ConfigHandler;
+import train.common.core.handlers.FuelHandler;
+import train.common.core.network.PacketKeyPress;
+import train.common.core.util.TraincraftUtil;
+import train.common.library.GuiIDs;
+
+import java.util.List;
+
+public abstract class AbstractZeppelin extends Entity implements IInventory {
+	public Entity riddenByEntity = null;
+
+	@Override
+	protected void addPassenger(Entity passenger) {
+		super.addPassenger(passenger);
+		this.riddenByEntity = passenger;
+	}
+
+	@Override
+	protected void removePassenger(Entity passenger) {
+		super.removePassenger(passenger);
+		if (this.riddenByEntity == passenger) this.riddenByEntity = null;
+	}
+
+	protected ItemStack zeppInvent[];
+	public int numCargoSlots;
+	public int numCargoSlots1;
+	public int numCargoSlots2;
+	public int inventorySize;
+	public int fuel;
+	public boolean idle;
+	public boolean altitude;
+
+	public int boatCurrentDamage;
+	public int boatTimeSinceHit;
+	public int boatRockDirection;
+	/*
+	 * Unknown variables
+	 */
+	protected boolean field_70279_a;
+
+	protected int boatPosRotationIncrements;
+	protected double boatX;
+	protected double boatY;
+	protected double boatZ;
+	protected double boatYaw;
+	protected double boatPitch;
+	@SideOnly(Side.CLIENT)
+	protected double velocityX;
+	@SideOnly(Side.CLIENT)
+	protected double velocityY;
+	@SideOnly(Side.CLIENT)
+	protected double velocityZ;
+//	public double rotationYawClient;
+	protected double updateTicks;
+	public float pitch = 0F;
+	public float roll = 0F;
+	private int bombTimer;
+	private int fuelAmount = 0;
+
+	public AbstractZeppelin(World world) {
+		super(world);
+		boatCurrentDamage = 0;
+		boatTimeSinceHit = 0;
+		boatRockDirection = 1;
+		preventEntitySpawning = true;
+		setSize(2F, 0.8F);
+		numCargoSlots = 3;
+		numCargoSlots1 = 3;
+		numCargoSlots2 = 3;
+		inventorySize = numCargoSlots + numCargoSlots2 + numCargoSlots1 + 5;
+		zeppInvent = new ItemStack[inventorySize];
+		idle = false;
+		if (ConfigHandler.FLICKERING) {
+			this.ignoreFrustumCheck = true;
+		}
+		this.fuelAmount = fuel;
+		this.field_70279_a = true;
+	}
+
+	@Override
+	protected boolean canTriggerWalking() {
+		return false;
+	}
+
+	@Override
+	protected void entityInit() {}
+
+	public AxisAlignedBB getCollisionBox(Entity entity) {
+		return entity.getEntityBoundingBox();
+	}
+
+	public AxisAlignedBB getBoundingBox() {
+		return getEntityBoundingBox();
+	}
+
+	@Override
+	public boolean canBePushed() {
+		return false;
+	}
+
+	@Override
+	public void applyEntityCollision(Entity entity) {
+		if (!this.getPassengers().contains(entity)) {
+			double var2 = entity.posX - this.posX;
+			double var4 = entity.posZ - this.posZ;
+			double var6 = Math.max(Math.abs(var2), Math.abs(var4));
+
+			if (var6 >= 0.009999999776482582D) {
+				var6 = (float) Math.sqrt(var6);
+				var2 /= var6;
+				var4 /= var6;
+				double var8 = 1.0D / var6;
+
+				if (var8 > 1.0D) {
+					var8 = 1.0D;
+				}
+
+				var2 *= var8;
+				var4 *= var8;
+				var2 *= 0.05000000074505806D;
+				var4 *= 0.05000000074505806D;
+				var2 *= 1.0F - this.entityCollisionReduction;
+				var4 *= 1.0F - this.entityCollisionReduction;
+				this.addVelocity(-var2, 0.0D, -var4);
+				entity.addVelocity(var2, 0.0D, var4);
+			}
+		}
+	}
+
+	public AbstractZeppelin(World world, double d, double d1, double d2) {
+		this(world);
+		setPosition(d, d1 + 0.4F, d2);
+		motionX = 0.0D;
+		motionY = 0.0D;
+		motionZ = 0.0D;
+		prevPosX = d;
+		prevPosY = d1;
+		prevPosZ = d2;
+	}
+
+	@Override
+	public double getMountedYOffset() {
+		return height * 0.0D - 0.30000001192092896D;
+	}
+
+	@Override
+	public void setDead() {
+		super.setDead();
+		isDead = true;
+	}
+
+	public void pressKeyClient(int i) {
+		if (updateTicks % 5 == 0)
+			Traincraft.keyChannel.sendToServer(new PacketKeyPress(i));
+	}
+
+	public void pressKey(int i) {
+		if (i == 0) {
+			if (getFuel() > 0 && posY < 256) {
+				/**
+				 * up
+				 */
+				altitude = true;
+				idle = false;
+			}
+		}
+
+		if (i == 2) {
+			/**
+			 * down
+			 */
+			altitude = false;
+			idle = false;
+		}
+		/**
+		 * idle key
+		 */
+		if (i == 6) {
+			altitude = false;
+			idle = true;
+		}
+
+		if (i == 7 && !this.world.isRemote) {
+			((EntityPlayer) riddenByEntity).openGui(Traincraft.instance, GuiIDs.ZEPPELIN, this.world, (int) this.posX, (int) this.posY, (int) this.posZ);
+		}
+		if (i == 9) {
+			if (this.riddenByEntity != null && (this.riddenByEntity instanceof EntityLivingBase)&&bombTimer<=0) {
+				if(this.zeppInvent!=null && this.zeppInvent.length>0){
+					for(int t=0;t<this.zeppInvent.length;t++){
+						if(this.zeppInvent[t]!=null && this.zeppInvent[t].getItem()!=null && this.zeppInvent[t].getItem() == Item.getItemFromBlock(Blocks.TNT)){
+							EntityTNTPrimed entitytntprimed = new EntityTNTPrimed(this.world, (double) ((float) posX), (double) ((float) posY -1F), (double) ((float) posZ), (EntityLivingBase) this.riddenByEntity);
+							this.world.spawnEntity(entitytntprimed);
+							entitytntprimed.playSound(net.minecraft.init.SoundEvents.ENTITY_TNT_PRIMED, 1.0F, 1.0F);
+							bombTimer=100;
+							this.zeppInvent[t].shrink(1);
+							if(this.zeppInvent[t].isEmpty()) this.zeppInvent[t]=null;
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public double speedXFromPitch(EntityPlayer player, double var3) {
+		return -MathHelper.sin((player.rotationYaw) / 180.0F * (float) Math.PI) * var3 * MathHelper.cos(player.rotationPitch / 180.0F * (float) Math.PI) * var3;
+	}
+
+	public double speedZFromPitch(EntityPlayer player, double var3) {
+		return MathHelper.cos((player.rotationYaw) / 180.0F * (float) Math.PI) * var3 * MathHelper.cos(player.rotationPitch / 180.0F * (float) Math.PI) * var3;
+	}
+
+	public double speedXFromPitch(Entity entity, double var3) {
+		return -MathHelper.sin((entity.rotationYaw + 90) / 180.0F * (float) Math.PI) * var3 * MathHelper.cos(entity.rotationPitch / 180.0F * (float) Math.PI) * var3;
+	}
+
+	public double speedZFromPitch(Entity entity, double var3) {
+		return MathHelper.cos((entity.rotationYaw + 90) / 180.0F * (float) Math.PI) * var3 * MathHelper.cos(entity.rotationPitch / 180.0F * (float) Math.PI) * var3;
+	}
+
+	@SideOnly(Side.CLIENT)
+	@Override
+	public void performHurtAnimation() {
+		boatRockDirection = -boatRockDirection;
+		boatTimeSinceHit = 10;
+		boatCurrentDamage += boatCurrentDamage * 10;
+	}
+
+	@Override
+	public boolean canBeCollidedWith() {
+		return !isDead;
+	}
+
+	@SideOnly(Side.CLIENT)
+	/**
+	 * Sets the position and rotation. Only difference from the other one is no bounding on the rotation. Args: posX,
+	 * posY, posZ, yaw, pitch
+	 */
+	public void setPositionAndRotation2(double par1, double par3, double par5, float par7, float par8, int par9) {
+		if (this.field_70279_a) {
+			this.boatPosRotationIncrements = par9 + 5;
+		}
+		else {
+			double var10 = par1 - this.posX;
+			double var12 = par3 - this.posY;
+			double var14 = par5 - this.posZ;
+			double var16 = var10 * var10 + var12 * var12 + var14 * var14;
+
+			if (var16 <= 1.0D) { return; }
+			this.boatPosRotationIncrements = 3;
+		}
+
+		this.boatX = par1;
+		this.boatY = par3;
+		this.boatZ = par5;
+		this.boatYaw = par7;
+		this.boatPitch = par8;
+		this.motionX = this.velocityX;
+		this.motionY = this.velocityY;
+		this.motionZ = this.velocityZ;
+	}
+
+	@SideOnly(Side.CLIENT)
+	/**
+	 * Sets the velocity to the args. Args: x, y, z
+	 */
+	@Override
+	public void setVelocity(double par1, double par3, double par5) {
+		this.velocityX = this.motionX = par1;
+		this.velocityY = this.motionY = par3;
+		this.velocityZ = this.motionZ = par5;
+	}
+
+	/**
+	 * Used to setup more passengers seats!
+	 *
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return
+	 */
+	public Vec3d rotate(double x, double y, double z) {
+		double cosYaw = Math.cos(this.getYaw() * 3.141593F / 180.0F);
+		double sinYaw = Math.sin(this.getYaw() * 3.141593F / 180.0F);
+		double cosPitch = Math.cos((this.getPitch()) * 3.141593F / 180.0F);
+		double sinPitch = Math.sin((this.getPitch()) * 3.141593F / 180.0F);
+		double cosRoll = Math.cos(0 * 3.141593F / 180.0F);// 0.01745
+		double sinRoll = Math.sin(0 * 3.141593F / 180.0F);// 0
+
+		double newX = (-x * cosRoll - y * sinRoll) * cosYaw + ((-x * sinRoll + y * cosRoll) * 0 + z * 0.01745) * sinYaw;
+		double newY = -(((cosPitch - x) * -sinPitch));
+		double newZ = (y * sinRoll - x * cosRoll) * sinYaw + ((-x * sinRoll + y * cosRoll) * 0 + z * 0.01745) * cosYaw;
+
+		return new Vec3d(newX, newY, newZ);
+	}
+
+	public float getYaw() {
+		return this.rotationYaw;
+	}
+
+	public float getPitch() {
+		return this.rotationPitch;
+	}
+
+	@Override
+	public void onUpdate() {
+		this.fallDistance = 0F;
+		super.onUpdate();
+		updateTicks++;
+		if(bombTimer>0)bombTimer--;
+		if (boatTimeSinceHit > 0) {
+			boatTimeSinceHit--;
+		}
+		if (boatCurrentDamage > 0) {
+			boatCurrentDamage--;
+		}
+
+		if (riddenByEntity == null) {
+			pitch = 0F;
+		}
+
+		prevPosX = posX;
+		prevPosY = posY;
+		prevPosZ = posZ;
+		int i = 5;
+		double d = 0.0D;
+		for (int j = 0; j < i; j++) {
+			AxisAlignedBB bb = getEntityBoundingBox();
+			double d4 = (bb.minY + ((bb.maxY - bb.minY) * (j)) / i) - 0.125D;
+			double d8 = (bb.minY + ((bb.maxY - bb.minY) * (j + 1)) / i) - 0.125D;
+			AxisAlignedBB axisalignedbb = new AxisAlignedBB(bb.minX, d4, bb.minZ, bb.maxX, d8, bb.maxZ);
+			if (this.world.isMaterialInBB(axisalignedbb, Material.WATER)) {
+				d += 1.0D / i;
+			}
+		}
+		double d13;
+		double d11 = Math.sqrt(motionX * motionX + motionZ * motionZ);
+		if (getFuel() > 0) {
+			d13 = Math.cos((rotationYaw * 3.1415926535897931D) / 180D);
+			double d15 = Math.sin((rotationYaw * 3.1415926535897931D) / 180D);
+			double d18 = rand.nextFloat() * 2.0F - 1.0F;
+			double d20 = (rand.nextInt(2) * 2 - 1) * 0.69999999999999996D;
+			if (rand.nextBoolean()) {
+				double d21 = (posX - d13 * d18 * 0.80000000000000004D) + d15 * d20;
+				double d23 = posZ - d15 * d18 * 0.80000000000000004D - d13 * d20;
+				this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_LARGE, d21, posY - 0.125D, d23, motionX, motionY, motionZ);
+			}
+			else {
+				double d22 = posX + d13 + d15 * d18 * 0.69999999999999996D;
+				double d24 = (posZ + d15) - d13 * d18 * 0.69999999999999996D;
+				this.world.spawnParticle(net.minecraft.util.EnumParticleTypes.SMOKE_LARGE, d22, posY - 0.125D, d24, motionX, motionY, motionZ);
+			}
+		}
+		float burn = FuelHandler.steamFuelLast(zeppInvent[0])*0.05f;
+
+		if (zeppInvent[0] != null && burn >0 && burn + fuel < 1000) {
+			fuel += TileEntityFurnace.getItemBurnTime(zeppInvent[0]);
+			this.fuelAmount = fuel;
+			decrStackSize(0, 1);
+		}
+
+		double var6;
+		double var8;
+
+
+		double var12;
+		double var26;
+
+		if (this.world.isRemote && this.field_70279_a) {
+			if (this.boatPosRotationIncrements > 0) {
+				var6 = this.posX + (this.boatX - this.posX) / this.boatPosRotationIncrements;
+				var8 = this.posY + (this.boatY - this.posY) / this.boatPosRotationIncrements;
+				var26 = this.posZ + (this.boatZ - this.posZ) / this.boatPosRotationIncrements;
+				var12 = MathHelper.wrapDegrees(this.boatYaw - this.rotationYaw);
+				this.rotationYaw = (float)(this.rotationYaw + var12 / this.boatPosRotationIncrements);
+				this.rotationPitch = (float) (this.rotationPitch + (this.boatPitch - this.rotationPitch) / this.boatPosRotationIncrements);
+				--this.boatPosRotationIncrements;
+				this.setPosition(var6, var8, var26);
+				this.setRotation(this.rotationYaw, this.rotationPitch);
+			}
+			else {
+				var6 = this.posX + this.motionX;
+				var8 = this.posY + this.motionY;
+				var26 = this.posZ + this.motionZ;
+				this.setPosition(var6, var8, var26);
+
+				if (this.onGround) {
+					this.motionX *= 0.5D;
+					this.motionY *= 0.5D;
+					this.motionZ *= 0.5D;
+				}
+
+				this.motionX *= 0.9900000095367432D;
+				this.motionY *= 0.949999988079071D;
+				this.motionZ *= 0.9900000095367432D;
+			}
+			return;
+		}
+		double d5;
+		double speedMultiplier = 0.07;
+		if (this.riddenByEntity != null && this.riddenByEntity instanceof EntityLivingBase) {
+			d13 = ((EntityLivingBase) this.riddenByEntity).moveForward;
+
+			if (d13 > 0.0D) {
+				d5 = -Math.sin(this.riddenByEntity.rotationYaw * (float) Math.PI / 180.0F);
+				d11 = Math.cos(this.riddenByEntity.rotationYaw * (float) Math.PI / 180.0F);
+				this.motionX += d5 * speedMultiplier * 0.05000000074505806D;
+				this.motionZ += d11 * speedMultiplier * 0.05000000074505806D;
+			}
+		}
+
+		if (rand.nextInt(4) == 0 && fuel > 0) {
+			fuel = this.fuelAmount;
+			fuel--;
+			this.fuelAmount = fuel;
+		}
+		double d3 = d * 2D - 1.0D;
+		motionY += 0.039999999105930328D * d3;
+		if (altitude && posY < 256) {
+
+			motionY = 0.051;
+
+		}
+		else if ((!idle && !altitude) || (posY > 256 && !idle)) {
+			motionY = -0.021;
+		}
+		else if (idle) {
+			motionY = 0;
+		}
+
+		double d7 = 0.30000000000000002D;
+		if (motionX < -d7) {
+			motionX = -d7;
+		}
+		if (motionX > d7) {
+			motionX = d7;
+		}
+		if (motionZ < -d7) {
+			motionZ = -d7;
+		}
+		if (motionZ > d7) {
+			motionZ = d7;
+		}
+		if (onGround) {
+			motionX *= 0.5D;
+			motionY *= 0.5D;
+			motionZ *= 0.5D;
+		}
+
+		move(net.minecraft.entity.MoverType.SELF, motionX, motionY, motionZ);
+
+		if (!collidedHorizontally && d11 < 0.24999999999999999D) {
+			motionX *= 0.99000000953674316D;
+			motionY *= 0.94999998807907104D;
+			motionZ *= 0.99000000953674316D;
+		}
+
+		List list = this.world.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+		if (list != null && list.size() > 0) {
+			for (int j1 = 0; j1 < list.size(); j1++) {
+				Entity entity = (Entity) list.get(j1);
+				if (entity != riddenByEntity && entity.canBePushed() && (entity instanceof AbstractZeppelin)) {
+					entity.applyEntityCollision(this);
+				}
+			}
+		}
+		if (riddenByEntity != null && riddenByEntity.isDead) {
+			riddenByEntity = null;
+		}
+
+		double rot = this.rotationYaw;
+		double div11 = this.prevPosX - this.posX;
+		double div10 = this.prevPosZ - this.posZ;
+
+		if ((div11 * div11) + (div10 * div10) > 0.001D) {
+			rot = TraincraftUtil.atan2degreesf(div10, div11);
+		}
+
+		double d12 = MathHelper.wrapDegrees(rot - this.rotationYaw);
+
+		if (d12 > 40.0D) {
+			d12 = 40.0D;
+		}
+
+		if (d12 < -40.0D) {
+			d12 = -40.0D;
+		}
+		this.rotationYaw = (float) (this.rotationYaw + d12);
+		this.setRotation(this.rotationYaw, this.rotationPitch);
+		if (updateTicks % 10 == 0) {
+//			Traincraft.rotationChannel.sendToAllAround(new PacketZeppelinRotation(this, rotationYaw, roll), new NetworkRegistry.TargetPoint(world.provider.dimensionId, posX, posY, posZ, 400D));
+			updateTicks=0;
+		}
+	}
+
+	@Override
+	protected void writeEntityToNBT(NBTTagCompound nbttagcompound) {
+
+		nbttagcompound.setInteger("Fuel", getFuel());
+		nbttagcompound.setBoolean("altitude", altitude);
+		nbttagcompound.setBoolean("idle", idle);
+		NBTTagList nbttaglist = new NBTTagList();
+		for (int i = 0; i < zeppInvent.length; i++) {
+			if (zeppInvent[i] != null) {
+				NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+				nbttagcompound1.setByte("Slot", (byte) i);
+				zeppInvent[i].writeToNBT(nbttagcompound1);
+				nbttaglist.appendTag(nbttagcompound1);
+			}
+		}
+		nbttagcompound.setTag("Items", nbttaglist);
+	}
+
+	@Override
+	protected void readEntityFromNBT(NBTTagCompound nbttagcompound) {
+		this.fuelAmount = nbttagcompound.getInteger("Fuel");
+		this.altitude = nbttagcompound.getBoolean("altitude");
+		this.idle = nbttagcompound.getBoolean("idle");
+		NBTTagList nbttaglist = nbttagcompound.getTagList("Items", Constants.NBT.TAG_COMPOUND);
+		zeppInvent = new ItemStack[getSizeInventory()];
+		for (int i = 0; i < nbttaglist.tagCount(); i++) {
+			NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(i);
+			int j = nbttagcompound1.getByte("Slot") & 0xff;
+			if (j >= 0 && j < zeppInvent.length) {
+				zeppInvent[j] = new ItemStack(nbttagcompound1);
+			}
+		}
+	}
+
+	public float getShadowSize() {
+		return 0.0F;
+	}
+
+	@Override
+	public int getSizeInventory() {
+		return inventorySize;
+	}
+
+	@Override
+	public ItemStack getStackInSlot(int i) {
+		return zeppInvent[i];
+	}
+
+	/**
+	 * works exactly like getStackInSlot, is only used upon closing GUIs
+	 */
+	public ItemStack getStackInSlotOnClosing(int par1) {
+		if (this.zeppInvent[par1] != null) {
+			ItemStack var2 = this.zeppInvent[par1];
+			this.zeppInvent[par1] = null;
+			return var2;
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public ItemStack decrStackSize(int i, int j) {
+		if (zeppInvent[i] != null) {
+			if (zeppInvent[i].getCount() <= j) {
+				ItemStack itemstack = zeppInvent[i];
+				zeppInvent[i] = null;
+				return itemstack;
+			}
+			ItemStack itemstack1 = zeppInvent[i].splitStack(j);
+			if (zeppInvent[i].isEmpty()) {
+				zeppInvent[i] = null;
+			}
+			return itemstack1;
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public ItemStack removeStackFromSlot(int i) {
+		if (zeppInvent[i] != null) {
+			ItemStack s = zeppInvent[i];
+			zeppInvent[i] = null;
+			return s;
+		}
+		return null;
+	}
+
+	@Override
+	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		zeppInvent[i] = itemstack;
+		if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
+			itemstack.setCount(getInventoryStackLimit());
+		}
+	}
+
+	@Override
+	public String getName() {
+		return "Zeppelin";
+	}
+
+	@Override
+	public int getInventoryStackLimit() {
+		return 64;
+	}
+
+	public boolean isFuelled() {
+		return getFuel() > 0;
+	}
+
+	public int c(int i) {
+		return (getFuel() * i) / 1000;
+	}
+
+	@Override
+	public void markDirty() {}
+
+
+	public boolean processInitialInteract(EntityPlayer entityplayer, net.minecraft.util.EnumHand hand) {
+
+		if (riddenByEntity != null && (riddenByEntity instanceof EntityPlayer) && riddenByEntity != entityplayer) { return true; }
+		if (!this.world.isRemote) {
+			entityplayer.startRiding(this);
+		}
+		return true;
+	}
+
+	@Override
+	public void openInventory(EntityPlayer player) {}
+
+	@Override
+	public void closeInventory(EntityPlayer player) {}
+
+	@Override
+	public boolean isUsableByPlayer(EntityPlayer entityplayer) {
+		return !isDead && entityplayer.getDistanceSq(this) <= 64D;
+	}
+
+	public int getFuel() {
+		return this.fuelAmount;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public void func_70270_d(boolean par1) {
+		this.field_70279_a = par1;
+	}
+
+	@Override
+	public boolean hasCustomName() {
+		return false;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		if (zeppInvent == null) return true;
+		for (ItemStack s : zeppInvent) {
+			if (s != null && !s.isEmpty()) return false;
+		}
+		return true;
+	}
+
+	@Override
+	public int getField(int id) { return 0; }
+
+	@Override
+	public void setField(int id, int value) {}
+
+	@Override
+	public int getFieldCount() { return 0; }
+
+	@Override
+	public void clear() {
+		if (zeppInvent != null) {
+			for (int i = 0; i < zeppInvent.length; i++) zeppInvent[i] = null;
+		}
+	}
+
+	@Override
+	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
+		return true;
+	}
+	public String getCommandSenderName(){
+		String s = EntityList.getEntityString(this);
+		if (s == null) {
+			s = "generic";
+		}
+
+		return I18n.format("entity." + s + ".name");
+	}
+}

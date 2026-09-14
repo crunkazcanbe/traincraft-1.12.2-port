@@ -1,0 +1,372 @@
+package train.common.api;
+
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.*;
+import net.minecraft.item.crafting.FurnaceRecipes;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
+import train.common.adminbook.ServerLogger;
+
+public abstract class AbstractWorkCart extends EntityRollingStock implements IInventory {
+	protected ItemStack[] furnaceItemStacks;
+	public int furnaceBurnTime = 0;
+	public int currentItemBurnTime = 0;
+	public int furnaceCookTime = 0;
+
+	public AbstractWorkCart(World world) {
+		super(world);
+	}
+
+	@Override
+	public void onUpdate() {
+		super.onUpdate();
+	}
+
+	@Override
+	protected void writeEntityToNBT(NBTTagCompound nbttagcompound) {
+		super.writeEntityToNBT(nbttagcompound);
+
+		nbttagcompound.setShort("BurnTime", (short) this.furnaceBurnTime);
+		nbttagcompound.setShort("CookTime", (short) this.furnaceCookTime);
+		NBTTagList var2 = new NBTTagList();
+
+		for (int var3 = 0; var3 < this.furnaceItemStacks.length; ++var3) {
+			if (this.furnaceItemStacks[var3] != null) {
+				NBTTagCompound var4 = new NBTTagCompound();
+				var4.setByte("Slot", (byte) var3);
+				this.furnaceItemStacks[var3].writeToNBT(var4);
+				var2.appendTag(var4);
+			}
+		}
+		nbttagcompound.setTag("Items", var2);
+	}
+
+	@Override
+	protected void readEntityFromNBT(NBTTagCompound nbttagcompound) {
+		super.readEntityFromNBT(nbttagcompound);
+		NBTTagList var2 = nbttagcompound.getTagList("Items", Constants.NBT.TAG_COMPOUND);
+		this.furnaceItemStacks = new ItemStack[this.getSizeInventoryWork()];
+
+		for (int var3 = 0; var3 < var2.tagCount(); ++var3) {
+			NBTTagCompound var4 = var2.getCompoundTagAt(var3);
+			byte var5 = var4.getByte("Slot");
+
+			if (var5 >= 0 && var5 < this.furnaceItemStacks.length) {
+				this.furnaceItemStacks[var5] = new ItemStack(var4);
+			}
+		}
+		this.furnaceBurnTime = nbttagcompound.getShort("BurnTime");
+		this.furnaceCookTime = nbttagcompound.getShort("CookTime");
+		this.currentItemBurnTime = AbstractWorkCart.getItemBurnTime(this.furnaceItemStacks[1]);
+	}
+
+	@Override
+	public int getInventoryStackLimit() {
+		return 64;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public int getCookProgressScaled(int par1) {
+		return this.furnaceCookTime * par1 / 200;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public int getBurnTimeRemainingScaled(int par1) {
+		if (this.currentItemBurnTime == 0) {
+			this.currentItemBurnTime = 200;
+		}
+		return this.furnaceBurnTime * par1 / this.currentItemBurnTime;
+	}
+
+	public boolean isBurningFurnace() {
+		return this.furnaceBurnTime > 0;
+	}
+
+	public void updateBurning() {
+		boolean var1 = this.furnaceBurnTime > 0;
+		boolean var2 = false;
+
+		if (this.furnaceBurnTime > 0) {
+			--this.furnaceBurnTime;
+		}
+		if (!this.world.isRemote) {
+			if (this.furnaceBurnTime == 0 && this.canSmelt()) {
+				this.currentItemBurnTime = this.furnaceBurnTime = getItemBurnTime(this.furnaceItemStacks[1]);
+
+				if (this.furnaceBurnTime > 0) {
+					var2 = true;
+
+					if (this.furnaceItemStacks[1] != null) {
+						this.furnaceItemStacks[1].shrink(1);
+
+						if (this.furnaceItemStacks[1].isEmpty()) {
+							this.furnaceItemStacks[1] = this.furnaceItemStacks[1].getItem().getContainerItem(furnaceItemStacks[1]);
+						}
+					}
+				}
+			}
+			if (this.isBurningFurnace() && this.canSmelt()) {
+				++this.furnaceCookTime;
+
+				if (this.furnaceCookTime == 200) {
+					this.furnaceCookTime = 0;
+					this.smeltItem();
+					var2 = true;
+				}
+			}
+			else {
+				this.furnaceCookTime = 0;
+			}
+
+			if (var1 != this.furnaceBurnTime > 0) {
+				var2 = true;
+			}
+		}
+	}
+
+	private boolean canSmelt() {
+		if (this.furnaceItemStacks[0] == null) {
+			return false;
+		}
+		else {
+			ItemStack var1 = FurnaceRecipes.instance().getSmeltingResult(this.furnaceItemStacks[0]);
+			if (var1 == null)
+				return false;
+			if (this.furnaceItemStacks[2] == null)
+				return true;
+			if (!this.furnaceItemStacks[2].isItemEqual(var1))
+				return false;
+			int result = furnaceItemStacks[2].getCount() + var1.getCount();
+			return (result <= getInventoryStackLimit() && result <= var1.getMaxStackSize());
+		}
+	}
+
+	public void smeltItem() {
+		if (this.canSmelt()) {
+			ItemStack var1 = FurnaceRecipes.instance().getSmeltingResult(this.furnaceItemStacks[0]);
+
+			if (this.furnaceItemStacks[2] == null) {
+				this.furnaceItemStacks[2] = var1.copy();
+			}
+			else if (this.furnaceItemStacks[2].isItemEqual(var1)) {
+				furnaceItemStacks[2].grow(var1.getCount());
+			}
+			this.furnaceItemStacks[0].shrink(1);
+			if (this.furnaceItemStacks[0].isEmpty()) {
+				this.furnaceItemStacks[0] = null;
+			}
+		}
+	}
+
+	public static int getItemBurnTime(ItemStack par0ItemStack) {
+		if (par0ItemStack == null) {
+			return 0;
+		}
+		else {
+			int var1 = Item.getIdFromItem(par0ItemStack.getItem());
+			Item var2 = par0ItemStack.getItem();
+
+			if (par0ItemStack.getItem() instanceof ItemBlock && Block.getBlockFromItem(var2) != null) {
+				Block var3 = Block.getBlockFromItem(var2);
+
+				if (var3 == Block.getBlockById(126)) {
+					return 150;
+				}
+
+				if (var3.getDefaultState().getMaterial() == Material.WOOD) {
+					return 300;
+				}
+			}
+
+			if (var2 instanceof ItemTool && ((ItemTool) var2).getToolMaterialName().equals("WOOD"))
+				return 200;
+			if (var2 instanceof ItemSword && ((ItemSword) var2).getToolMaterialName().equals("WOOD"))
+				return 200;
+			if (var1 == Item.getIdFromItem(Items.STICK))
+				return 100;
+			if (var1 == Item.getIdFromItem(Items.COAL))
+				return 1600;
+			if (var1 == Item.getIdFromItem(Items.LAVA_BUCKET))
+				return 20000;
+			if (var1 == Block.getIdFromBlock(Blocks.SAPLING))
+				return 100;
+			if (var1 == Item.getIdFromItem(Items.BLAZE_ROD))
+				return 2400;
+			return 0;
+		}
+	}
+
+	public static boolean isItemFuel(ItemStack par0ItemStack) {
+		return getItemBurnTime(par0ItemStack) > 0;
+	}
+
+	public int getSizeInventoryWork() {
+		return this.furnaceItemStacks.length;
+	}
+
+	@Override
+	public ItemStack getStackInSlot(int i) {
+		return this.furnaceItemStacks[i];
+	}
+
+	@Override
+	public boolean isEmpty() {
+		for (ItemStack stack : furnaceItemStacks) {
+			if (stack != null && !stack.isEmpty()) return false;
+		}
+		return true;
+	}
+
+	public ItemStack getStackInSlotOnClosing(int par1) {
+		if (this.furnaceItemStacks[par1] != null) {
+			ItemStack var2 = this.furnaceItemStacks[par1];
+			this.furnaceItemStacks[par1] = null;
+			return var2;
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public ItemStack decrStackSize(int par1, int par2) {
+		if (this.furnaceItemStacks[par1] != null) {
+			ItemStack var3;
+			if (this.furnaceItemStacks[par1].getCount() <= par2) {
+				var3 = this.furnaceItemStacks[par1];
+				this.furnaceItemStacks[par1] = null;
+				return var3;
+			}
+			else {
+				var3 = this.furnaceItemStacks[par1].splitStack(par2);
+				if (this.furnaceItemStacks[par1].isEmpty()) {
+					this.furnaceItemStacks[par1] = null;
+				}
+				return var3;
+			}
+		}
+		else {
+			return null;
+		}
+	}
+
+	@Override
+	public ItemStack removeStackFromSlot(int index) {
+		if (furnaceItemStacks[index] != null) {
+			ItemStack stack = furnaceItemStacks[index];
+			furnaceItemStacks[index] = null;
+			return stack;
+		}
+		return null;
+	}
+
+	@Override
+	public void setInventorySlotContents(int par1, ItemStack par2ItemStack) {
+		this.furnaceItemStacks[par1] = par2ItemStack;
+		if (par2ItemStack != null && par2ItemStack.getCount() > this.getInventoryStackLimit()) {
+			par2ItemStack.setCount(this.getInventoryStackLimit());
+		}
+	}
+
+	@Override
+	public void openInventory(EntityPlayer player) {}
+
+	@Override
+	public void closeInventory(EntityPlayer player) {}
+
+	@Override
+	public boolean isUsableByPlayer(EntityPlayer player) {
+		return true;
+	}
+
+	@Override
+	public int getSizeInventory() {
+		return 0;
+	}
+
+	@Override
+	public String getName() {
+		return "Work Cart";
+	}
+
+	@Override
+	public boolean hasCustomName() {
+		return false;
+	}
+
+	@Override
+	public ITextComponent getDisplayName() {
+		return new TextComponentString(getName());
+	}
+
+	@Override
+	public void markDirty() {}
+
+	@Override
+	public int getField(int id) {
+		return 0;
+	}
+
+	@Override
+	public void setField(int id, int value) {}
+
+	@Override
+	public int getFieldCount() {
+		return 0;
+	}
+
+	@Override
+	public void clear() {
+		for (int i = 0; i < furnaceItemStacks.length; i++) {
+			furnaceItemStacks[i] = null;
+		}
+	}
+
+	@Override
+	public boolean attackEntityFrom(DamageSource damagesource, float i) {
+		if (this.world.isRemote) {
+			return true;
+		}
+		if (this.canBeDestroyedByPlayer(damagesource) || damagesource.getTrueSource() == null) {
+			return false;
+		}
+		super.attackEntityFrom(damagesource, i);
+		setRollingDirection(-getRollingDirection());
+		setRollingAmplitude(10);
+		this.velocityChanged = true;
+		setDamage(getDamage() + i * 10);
+		if (getDamage() > 40) {
+			if (!this.getPassengers().isEmpty()) {
+				this.getPassengers().get(0).dismountRidingEntity();
+			}
+			this.setDead();
+			ServerLogger.deleteWagon(this);
+			if (damagesource.getTrueSource() instanceof EntityPlayer) {
+				for (ItemStack stack : furnaceItemStacks) {
+					if (stack != null) {
+						entityDropItem(stack, 1);
+					}
+				}
+				dropCartAsItem(((EntityPlayer) damagesource.getTrueSource()).capabilities.isCreativeMode);
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
+		return true;
+	}
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "tc:items/trains/b80c_a_icon"
+  }
+}

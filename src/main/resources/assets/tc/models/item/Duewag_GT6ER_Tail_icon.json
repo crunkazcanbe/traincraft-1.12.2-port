@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "tc:items/Duewag_GT6ER_Tail_icon"
+  }
+}

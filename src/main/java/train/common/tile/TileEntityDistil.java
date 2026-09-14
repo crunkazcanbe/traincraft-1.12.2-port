@@ -1,0 +1,402 @@
+package train.common.tile;
+
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntityFurnace;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
+import net.minecraftforge.fluids.*;
+import train.common.api.LiquidManager;
+import train.common.api.LiquidManager.StandardTank;
+import train.common.blocks.BlockDistil;
+import train.common.library.BlockIDs;
+import train.common.library.ItemIDs;
+import train.common.recipes.DistilRecipes;
+
+import java.util.Random;
+
+public class TileEntityDistil extends TileTraincraft implements IFluidHandler, ITickable {
+
+	private EnumFacing facing;
+	public int distilBurnTime;
+	public int currentItemBurnTime;
+	public int distilCookTime;
+	private int cookDuration;
+	private Random random;
+	private int updateTicks;
+	private int maxTank = 0;
+	private StandardTank theTank;
+	public int amount;
+	public int liquidItemID;
+
+	public TileEntityDistil() {
+		//slots 0=input 1=fuel 3=output 2=input canister ?=filled canister
+		super(5, "Distillation tower");
+		distilBurnTime = 0;
+		currentItemBurnTime = 0;
+		distilCookTime = 0;
+		cookDuration = 400;//default is 200
+		random = new Random();
+		this.maxTank = 30000;
+		this.theTank = LiquidManager.getInstance().new FilteredTank(maxTank, LiquidManager.getInstance().dieselFilter(), 1);
+	}
+
+	/**
+	 * Used by the GUI
+	 */
+	@SideOnly(Side.CLIENT)
+	public int getLiquid() {
+		return (amount);
+	}
+
+	/**
+	 * Used by the GUI
+	 */
+	@SideOnly(Side.CLIENT)
+	public int getLiquidItemID() {
+		return liquidItemID;
+	}
+
+	public StandardTank getTank() {
+		return theTank;
+	}
+
+
+	@Override
+	public void readFromNBT(NBTTagCompound nbtTag, boolean forSyncing) {
+		super.readFromNBT(nbtTag, forSyncing);
+		facing = EnumFacing.values()[nbtTag.getInteger("Orientation")];
+		distilBurnTime = nbtTag.getShort("BurnTime");
+		distilCookTime = nbtTag.getShort("CookTime");
+		currentItemBurnTime = nbtTag.getShort("CurrentItemBurn");
+		this.amount = nbtTag.getInteger("Amount");
+		liquidItemID = nbtTag.getInteger("LiquidID");
+		this.theTank.readFromNBT(nbtTag);
+	}
+
+	public int getTankCapacity() {
+		return maxTank;
+	}
+
+	@Override
+	public NBTTagCompound writeToNBT(NBTTagCompound nbtTag, boolean forSyncing) {
+		super.writeToNBT(nbtTag, forSyncing);
+		nbtTag.setInteger("Orientation", getFacing().ordinal());
+		nbtTag.setShort("BurnTime", (short) distilBurnTime);
+		nbtTag.setShort("CookTime", (short) distilCookTime);
+		nbtTag.setInteger("Amount", this.amount);
+		nbtTag.setInteger("LiquidID", this.liquidItemID);
+		nbtTag.setShort("CurrentItemBurn", (short) this.currentItemBurnTime);
+		this.theTank.writeToNBT(nbtTag);
+		return nbtTag;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public int getCookProgressScaled(int i) {
+		return (distilCookTime * i) / cookDuration;
+	}
+
+	@SideOnly(Side.CLIENT)
+	public int getBurnTimeRemainingScaled(int i) {
+		if (currentItemBurnTime == 0) {
+			currentItemBurnTime = cookDuration;
+		}
+		return (distilBurnTime * i) / currentItemBurnTime;
+	}
+
+	public boolean isBurning() {
+		return distilBurnTime > 0;
+	}
+
+	@Override
+	public void update() {
+		if (!this.world.isRemote) {
+			updateTicks++;
+			boolean flag = distilBurnTime > 0;
+			boolean flag1 = false;
+			if (distilBurnTime == 0 && canSmelt()) {
+				currentItemBurnTime = distilBurnTime = TileEntityFurnace.getItemBurnTime(slots[1]);
+				if (distilBurnTime > 0) {
+					flag1 = true;
+					if (slots[1] != null) {
+						if (slots[1].getItem().hasContainerItem(slots[1])) {
+							slots[1] = new ItemStack(slots[1].getItem().getContainerItem());
+						}
+						else {
+							slots[1].shrink(1);
+						}
+
+						if (slots[1].isEmpty()) {
+							slots[1] = null;
+						}
+					}
+				}
+			}
+
+			if (isBurning() && canSmelt()) {
+				distilCookTime++;
+				if (distilCookTime == cookDuration) {
+					distilCookTime = 0;
+					smeltItem();
+					flag1 = true;
+				}
+			}
+			else {
+				distilCookTime = 0;
+			}
+
+			if (flag != (distilBurnTime > 0)) {
+				flag1 = true;
+				BlockDistil.updateDistilBlockState(distilBurnTime > 0, this.world, this.pos);
+			}
+			else {
+				flag1 = false;
+				BlockDistil.updateDistilBlockState(distilBurnTime > 0, this.world, this.pos);
+				
+			}
+
+			if (slots[2] != null) {
+
+				if (this.updateTicks % 8 == 0) {
+
+					ItemStack result = LiquidManager.getInstance().processContainer(this, 2, theTank, slots[2]);
+
+					if (result != null && placeInInvent(result, 4, false)) {
+
+						placeInInvent(result, 4, true);
+
+						if (theTank.getFluid() != null) {
+
+							amount = theTank.getFluid().amount;
+						}
+						else {
+
+							amount = 0;
+						}
+
+						if (theTank.getFluid() != null) {
+
+							liquidItemID = net.minecraftforge.fluids.FluidRegistry.getRegisteredFluidIDs().getOrDefault(theTank.getFluid().getFluid(), 0);
+						}
+						else {
+
+							liquidItemID = 0;
+						}
+
+						flag1 = true;
+
+						this.markDirty();
+						
+					}
+				}
+			}
+
+			if (theTank.getFluid() != null) {
+				amount = theTank.getFluid().amount;
+			}
+			else {
+				amount = 0;
+			}
+			if (theTank.getFluid() != null) {
+				liquidItemID = net.minecraftforge.fluids.FluidRegistry.getRegisteredFluidIDs().getOrDefault(theTank.getFluid().getFluid(), 0);
+			}
+			else {
+				liquidItemID = 0;
+			}
+			if (updateTicks % 8 == 0){
+				this.markDirty();
+				
+			}
+			if (distilBurnTime > 0) {
+				distilBurnTime--;
+			}
+			if (flag1) {
+				this.syncTileEntity();
+				markDirty();
+			}
+		}
+	}
+
+	private boolean placeInInvent(ItemStack itemstack1, int i, boolean doAdd) {
+		if (slots[i] == null) {
+			if (doAdd)
+				slots[i] = itemstack1;
+			return true;
+		}
+		else if (slots[i] != null && Item.getIdFromItem(slots[i].getItem()) == Item.getIdFromItem(itemstack1.getItem()) && itemstack1.isStackable() && (!itemstack1.getHasSubtypes() || slots[i].getItemDamage() == itemstack1.getItemDamage()) && ItemStack.areItemStackTagsEqual(slots[i], itemstack1)) {
+			int var9 = slots[i].getCount() + itemstack1.getCount();
+			if (var9 <= itemstack1.getMaxStackSize()) {
+				if (doAdd)
+					slots[i].setCount(var9);
+
+			}
+			else if (slots[i].getCount() < itemstack1.getMaxStackSize()) {
+				if (doAdd)
+					slots[i].grow(1);
+			}
+			return true;
+		}
+		return false;
+
+	}
+
+	private boolean canSmelt() {
+		if (slots[0] == null || (slots[3] != null && slots[3].getCount()==64) || (slots[4] != null && slots[4].getCount()==64)) {
+			return false;
+		}
+		ItemStack itemstack = DistilRecipes.smelting().getSmeltingResult(slots[0].getItem());
+		if (itemstack == null) {
+			return false;
+		}
+		if (Block.getBlockFromItem(slots[0].getItem()) == BlockIDs.oreTC.block
+				&& (slots[0].getItemDamage() != 1 && slots[0].getItemDamage() != 2)) {
+			return false;
+		}
+		FluidStack resultLiquid = FluidContainerRegistry.getFluidForFilledItem(itemstack);
+		if (resultLiquid == null)
+			return false;
+		int used = getTank().fill(resultLiquid, false);
+		return (used >= resultLiquid.amount);
+	}
+
+	public void smeltItem() {
+		if (!canSmelt()) {
+			return;
+		}
+		ItemStack itemstack = DistilRecipes.smelting().getSmeltingResult(slots[0].getItem());
+		ItemStack plasticStack = DistilRecipes.smelting().getPlasticResult(slots[0].getItem());
+		int plasticChance = DistilRecipes.smelting().getPlasticChance(slots[0].getItem());
+		FluidStack resultLiquid = FluidContainerRegistry.getFluidForFilledItem(itemstack);
+		if (resultLiquid == null)
+			return;
+
+		int used = getTank().fill(resultLiquid, false);
+		if (used >= resultLiquid.amount)
+		{
+			getTank().fill(resultLiquid, true);
+			if (random.nextInt(plasticChance) == 0)
+				outputPlastic(plasticStack, slots[0].getItem() == ItemIDs.diesel.item);
+			if (theTank.getFluid() != null) {
+				amount = theTank.getFluid().amount;
+			}
+			if (theTank.getFluid() != null) {
+				liquidItemID = net.minecraftforge.fluids.FluidRegistry.getRegisteredFluidIDs().getOrDefault(theTank.getFluid().getFluid(), 0);
+			}
+
+			this.markDirty();
+			
+		}
+
+		if (slots[0].getItem().hasContainerItem(slots[0])) {
+			slots[0] = new ItemStack(slots[0].getItem().getContainerItem());
+		}
+		else {
+			slots[0].shrink(1);
+		}
+		if (slots[0].isEmpty()) {
+			slots[0] = null;
+		}
+		this.syncTileEntity();
+	}
+
+	private void outputPlastic(ItemStack plasticStack, boolean wasDeisel) {
+		if (slots[3] == null) {
+			if(wasDeisel){
+				slots[3]= new ItemStack(ItemIDs.emptyCanister.item,1);
+			} else {
+				slots[3] = plasticStack.copy();
+			}
+		} else if(wasDeisel){
+			if(slots[3].getItem()==ItemIDs.emptyCanister.item){
+				slots[3].grow(plasticStack.getCount());
+			} else {
+				slots[3].grow(plasticStack.getCount());
+			}
+		} else if (Item.getIdFromItem(slots[3].getItem()) == Item.getIdFromItem(plasticStack.getItem())) {
+			slots[3].grow(plasticStack.getCount());
+		}
+		this.markDirty();
+	}
+
+	public EnumFacing getFacing() {
+		if(facing!=null){
+			return this.facing;
+		}
+		return EnumFacing.NORTH;
+	}
+
+	public void setFacing(EnumFacing face) {
+		this.facing = face;
+	}
+
+	@Override
+	public void openInventory(net.minecraft.entity.player.EntityPlayer player) {}
+
+	@Override
+	public void closeInventory(net.minecraft.entity.player.EntityPlayer player) {}
+
+	public FluidStack getFluid() {
+		return theTank.getFluid();
+	}
+
+	@Override
+	public int fill(EnumFacing from, FluidStack resource, boolean doFill)
+	{
+		return theTank.fill(resource, doFill);
+	}
+
+	@Override
+	public FluidStack drain(EnumFacing from, FluidStack resource, boolean doDrain) {
+		if (resource == null || !resource.isFluidEqual(theTank.getFluid())) {
+			return null;
+		}
+		return theTank.drain(resource.amount, doDrain);
+	}
+
+	@Override
+	public FluidStack drain(EnumFacing from, int maxDrain, boolean doDrain) {
+		return theTank.drain(maxDrain, doDrain);
+	}
+
+	public int getCapacity() {
+		return this.maxTank;
+	}
+	@Override
+	public boolean canFill(EnumFacing from, Fluid fluid) {
+		return true;
+	}
+
+	@Override
+	public boolean canDrain(EnumFacing from, Fluid fluid) {
+		return true;
+	}
+
+	@Override
+	public FluidTankInfo[] getTankInfo(EnumFacing from)
+	{
+		return new FluidTankInfo[] { theTank.getInfo() };
+	}
+
+
+	@Override
+	public boolean isItemValidForSlot(int i, ItemStack itemstack) {
+		return true;
+	}
+
+	@Override
+	public boolean canInsertItem(int slot, ItemStack stack, EnumFacing side){
+		if(side == EnumFacing.DOWN) return false;
+		else if(side == EnumFacing.UP) return slot == 0;
+		else return slot == 1;
+	}
+
+	@Override
+	public boolean canExtractItem(int slot, ItemStack stack, EnumFacing side){
+		return side != EnumFacing.UP && slot == 3;
+	}
+
+}

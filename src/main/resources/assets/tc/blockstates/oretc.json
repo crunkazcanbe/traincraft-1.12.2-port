@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "variant=0": {
+      "model": "tc:oretc_copperore"
+    },
+    "variant=1": {
+      "model": "tc:oretc_oilsands"
+    },
+    "variant=2": {
+      "model": "tc:oretc_petroleum"
+    },
+    "variant=3": {
+      "model": "tc:oretc_ballast"
+    }
+  }
+}

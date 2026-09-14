@@ -1,0 +1,59 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+eclipse
+.debris
+
+# idea
+out
+.idea
+*.iws
+*.iml
+*.ipr
+
+.DS_Store
+
+# gradle
+build
+.gradle
+
+# build
+asm
+config
+logs
+options.txt
+libs/*
+!libs/buildcraft-8.0.0-deduped.jar
+saves
+usernamecache.json
+crash-report
+crash-reports
+
+# other
+run
+lib
+*.iws___jb_tmp___
+*.directory
+classes
+runserver
+buildtotest.bat
+
+src/main/java/train/common/api/TrainsOnClick.java
+
+# Local tool artifacts
+.recall/
+.impeccable/
+.codebase-memory/
+graphify-out/
+*.bak
+
+build/
+run/
+.gradle/
+libs/*.jar
+graphify-out/
+.recall/
+.impeccable/
+__pycache__/

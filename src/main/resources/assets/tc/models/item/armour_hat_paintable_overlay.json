@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "tc:items/armour/armour_hat_paintable_overlay"
+  }
+}

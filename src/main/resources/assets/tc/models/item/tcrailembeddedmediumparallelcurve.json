@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "tc:items/tracks/item_rail_tc_embedded_parallel_curve_medium"
+  }
+}

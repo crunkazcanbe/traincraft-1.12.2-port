@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "variant=default": { "model": "tc:asphalt" },
+    "half=bottom,variant=default": { "model": "tc:asphalt" },
+    "half=top,variant=default": { "model": "tc:asphalt" }
+  }
+}

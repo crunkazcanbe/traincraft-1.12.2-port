@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "normal": {
+      "model": "tc:tc_empty"
+    },
+    "inventory": {
+      "model": "tc:milwswitchstand"
+    }
+  }
+}

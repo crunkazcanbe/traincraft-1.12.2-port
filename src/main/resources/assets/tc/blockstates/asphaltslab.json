@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=bottom,variant=default": {
+      "model": "tc:asphaltslab"
+    },
+    "half=top,variant=default": {
+      "model": "tc:asphaltslab_top"
+    }
+  }
+}

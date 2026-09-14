@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "data=0": {
+      "model": "tc:windmill"
+    },
+    "data=1": {
+      "model": "tc:windmill"
+    },
+    "data=2": {
+      "model": "tc:windmill"
+    },
+    "data=3": {
+      "model": "tc:windmill"
+    },
+    "data=4": {
+      "model": "tc:windmill"
+    },
+    "data=5": {
+      "model": "tc:windmill"
+    },
+    "data=6": {
+      "model": "tc:windmill"
+    },
+    "data=7": {
+      "model": "tc:windmill"
+    },
+    "data=8": {
+      "model": "tc:windmill"
+    },
+    "data=9": {
+      "model": "tc:windmill"
+    },
+    "data=10": {
+      "model": "tc:windmill"
+    },
+    "data=11": {
+      "model": "tc:windmill"
+    },
+    "data=12": {
+      "model": "tc:windmill"
+    },
+    "data=13": {
+      "model": "tc:windmill"
+    },
+    "data=14": {
+      "model": "tc:windmill"
+    },
+    "data=15": {
+      "model": "tc:windmill"
+    }
+  }
+}
