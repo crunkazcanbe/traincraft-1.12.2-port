@@ -107,6 +107,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	public float serverRealPitch;
 	private double rollingPitch;
 	public float oldClientYaw = 0;//used in rendering class
+	public float lastRailYaw = Float.NaN;//used in rendering class: last track facing seen under the train
 	@SideOnly(Side.CLIENT)
 	private double rollingVelocityX;
 	@SideOnly(Side.CLIENT)
@@ -1278,6 +1279,11 @@ public abstract class EntityRollingStock extends AbstractTrains {
 			}
 		}
 		else {
+			// Derailed (ran off the end of the track, or no track at all): grind to a stop within a
+			// couple of blocks instead of coasting on across the grass at rail height. This also
+			// beats the throttle, so a derailed loco can't drive itself around off the rails.
+			motionX *= 0.6D;
+			motionZ *= 0.6D;
 			//moveMinecartOffRail(i,j,k);
 			super.onUpdate();
 		}

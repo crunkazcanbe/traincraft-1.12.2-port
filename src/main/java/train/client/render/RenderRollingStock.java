@@ -25,6 +25,7 @@ import java.util.Random;
 public class RenderRollingStock extends Render<EntityRollingStock> {
 	private static Random random = new Random();
 	private static final java.util.Set<Integer> LOG_ONCE = new java.util.HashSet<Integer>();
+	private static final java.util.Map<Integer, Float> LAST_ROT = new java.util.HashMap<Integer, Float>();
 	// ponytail: vertical lift for bogie locos so their body clears the rail (was ~1/4 buried).
 	private static final float BOGIE_LIFT = 0.85F;
 	// ponytail: TUNE KNOB. Freight/cargo wagons sit buried in the ground (their model
@@ -56,6 +57,15 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 		}
 		Float v = CONF.get(key);
 		return v != null ? v : def;
+	}
+
+	private static boolean isDerailed(EntityRollingStock cart) {
+		int x = MathHelper.floor(cart.posX), y = MathHelper.floor(cart.posY), z = MathHelper.floor(cart.posZ);
+		for (int dy = -1; dy <= 0; dy++) {
+			net.minecraft.block.Block b = cart.world.getBlockState(new net.minecraft.util.math.BlockPos(x, y + dy, z)).getBlock();
+			if (b instanceof BlockRailBase || b == train.common.library.BlockIDs.tcRail.block || b == train.common.library.BlockIDs.tcRailGag.block) return false;
+		}
+		return true;
 	}
 
 	public RenderRollingStock(net.minecraft.client.renderer.entity.RenderManager rm) {
@@ -167,11 +177,32 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 		String railDbg = "norail";
 		try {
 			net.minecraft.tileentity.TileEntity rte = cart.world.getTileEntity(new net.minecraft.util.math.BlockPos(i, j, k));
-			if (!(rte instanceof train.common.tile.TileTCRail)) rte = cart.world.getTileEntity(new net.minecraft.util.math.BlockPos(i, j - 1, k));
+			if (!(rte instanceof train.common.tile.TileTCRail || rte instanceof train.common.tile.TileTCRailGag)) rte = cart.world.getTileEntity(new net.minecraft.util.math.BlockPos(i, j - 1, k));
+			// Long track pieces are one TileTCRail plus filler "gag" blocks that don't carry the
+			// facing. Resolve a gag to its origin rail, or the train fell back to rotationYaw (which
+			// follows the direction of MOTION) every time its centre crossed a filler block --
+			// that is what spun the train nose-for-tail when it started, stopped or reversed.
+			if (rte instanceof train.common.tile.TileTCRailGag) {
+				train.common.tile.TileTCRailGag gag = (train.common.tile.TileTCRailGag) rte;
+				rte = cart.world.getTileEntity(new net.minecraft.util.math.BlockPos(gag.originX, gag.originY, gag.originZ));
+			}
 			if (rte instanceof train.common.tile.TileTCRail) {
 				int f = ((train.common.tile.TileTCRail) rte).getFacing();
 				railYaw = f * 90.0F;
+				// A straight piece placed from the other end reports the opposite facing (0 vs 2),
+				// which spun the train nose-for-tail on every such piece. Only the track's AXIS
+				// matters here: keep whichever of railYaw / railYaw+180 is nearer the heading the
+				// train already had.
+				if (!Float.isNaN(cart.lastRailYaw) && Math.abs(MathHelper.wrapDegrees(railYaw - cart.lastRailYaw)) > 90.0F) {
+					railYaw = MathHelper.wrapDegrees(railYaw + 180.0F);
+				}
 				railDbg = "tcFacing=" + f;
+				cart.lastRailYaw = railYaw;
+			} else if (!Float.isNaN(cart.lastRailYaw)) {
+				// Off the rails (derailed) or a rail with no tile: keep the last track heading
+				// rather than snapping to the motion-dependent rotationYaw.
+				railYaw = cart.lastRailYaw;
+				railDbg = "lastRail";
 			}
 		} catch (Throwable t) { railDbg = "ERR:" + t; }
 		if (cart.bogieLoco != null) {// || cart.bogieUtility[0]!=null){
@@ -215,7 +246,7 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 			// LIVE-SWITCHABLE rotation source (no rebuild needed to try each):
 			// locoSrc 0=rotationYaw 1=newYaw 2=serverRealRotation 3=rotationYawClientReal
 			float locoSrc;
-			switch ((int) conf("locoSrc", 1.0F)) {
+			switch ((int) conf("locoSrc", 4.0F)) {
 				case 0:  locoSrc = cart.rotationYaw;            break;
 				case 2:  locoSrc = cart.serverRealRotation;     break;
 				case 3:  locoSrc = cart.rotationYawClientReal;  break;
@@ -230,7 +261,14 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 			// default correction (still overridable live via off_<class> in the conf file).
 			float modelDefault = cart.getClass().getSimpleName().equals("EntityLocoDieselBapCF7round") ? 90.0F : 0.0F;
 			float modelOff = conf("off_" + cart.getClass().getSimpleName(), modelDefault);
-			GL11.glRotatef(conf("locoA", 90.0F) + conf("locoB", -1.0F) * locoSrc + modelOff, 0.0F, 1.0F, 0.0F);
+			float locoRot = conf("locoA", 90.0F) + conf("locoB", -1.0F) * locoSrc + modelOff;
+			// [TC-FLIP] log any sudden 90+ degree turn of a loco body so a remaining flip shows its cause.
+			Float prevRot = LAST_ROT.put(cart.getEntityId(), locoRot);
+			if (prevRot != null && Math.abs(MathHelper.wrapDegrees(locoRot - prevRot)) > 60.0F) {
+				System.out.println("[TC-FLIP] " + cart.getClass().getSimpleName() + " " + prevRot + " -> " + locoRot
+					+ " railDbg=[" + railDbg + "] rotationYaw=" + cart.rotationYaw + " motion=" + cart.motionX + "," + cart.motionZ);
+			}
+			GL11.glRotatef(locoRot, 0.0F, 1.0F, 0.0F);
 			cart.setRenderYaw(newYaw);
 			cart.setRenderPitch(pitch);
 		}
@@ -312,6 +350,13 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 			else{
 				GL11.glRotatef(-pitch, 0.0F, 0.0F, 1.0F);
 			}
+		}
+		// Derailed (no track under the train): drop the body onto the ground and tip it over, so a
+		// train that ran off the end of the line reads as derailed instead of hovering at rail height.
+		// Live-tunable: derailDrop (blocks down), derailTilt (degrees of lean).
+		if (isDerailed(cart)) {
+			GL11.glTranslatef(0.0F, -conf("derailDrop", 1.0F), 0.0F);
+			GL11.glRotatef(conf("derailTilt", 8.0F), 1.0F, 0.0F, 0.0F);
 		}
 		float var28 = cart.getRollingAmplitude() - time;
 		float var30 = cart.getDamage() - time;

@@ -62,6 +62,44 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
     private int slotsFilled = 0;
     private int fuelUpdateTicks = 0;
     public boolean isLocoTurnedOn = false;
+    /** The train's forward direction as a yaw quadrant (0=+Z 1=-X 2=-Z 3=+X), -1 = not chosen yet. */
+    private int trainForward = -1;
+    /** Whether the train is currently rolling toward trainForward (vs. backing up). */
+    private boolean rollingForward = true;
+
+    /**
+     * Which way W pushes. Upstream Traincraft used the rider's LOOK direction, so holding W and
+     * turning your head steered the train. Instead the train keeps its own forward direction: it
+     * is picked from where you look only when you first throttle a stopped train, then it follows
+     * the train's motion around curves. Not saved: after a reload it is picked from your look again.
+     */
+    private int throttleDir(EntityPlayer rider) {
+        double speed = Math.sqrt(motionX * motionX + motionZ * motionZ);
+        if (trainForward < 0) {
+            trainForward = MathHelper.floor((rider.rotationYaw * 4F) / 360F + 0.5D) & 3;
+            rollingForward = true;
+        }
+        if (speed > 0.01D) {
+            int moving = Math.abs(motionZ) >= Math.abs(motionX) ? (motionZ > 0 ? 0 : 2) : (motionX < 0 ? 1 : 3);
+            if (moving == trainForward) rollingForward = true;
+            else if (moving == ((trainForward + 2) & 3)) rollingForward = false;
+            // Axis changed (a curve): carry the forward/backward sense onto the new axis.
+            trainForward = rollingForward ? moving : (moving + 2) & 3;
+        }
+        return trainForward;
+    }
+
+    /**
+     * Why this engine can't pull in the current dimension, or null if it can: steam boils dry in the
+     * Nether, electric has no grid to draw from in the End. The throttle does nothing while blocked.
+     */
+    private String dimensionBlock() {
+        int dim = world.provider.getDimension();
+        if (dim == -1 && this instanceof SteamTrain) return "Steam engines can't run in the Nether - the water boils away";
+        if (dim == 1 && this instanceof ElectricTrain) return "Electric engines can't run in the End - there's no power here";
+        return null;
+    }
+
     public boolean forwardPressed = false;
     private boolean backwardPressed = false;
     public boolean brakePressed = false;
@@ -742,14 +780,17 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
                             + " locked=" + this.getTrainLockedFromPacket()
                             + " brake=" + this.parkingBrake);
                     }
-                    if (getFuel() > 0 && this.isLocoTurnedOn() && rand.nextInt(4) == 0 && !world.isRemote) {
+                    String noPower = dimensionBlock();
+                    if (noPower != null && ticksExisted % 40 == 0 && riddenByEntity instanceof EntityPlayer) {
+                        ((EntityPlayer) riddenByEntity).sendStatusMessage(new TextComponentString(noPower), true);
+                    }
+                    if (noPower == null && getFuel() > 0 && this.isLocoTurnedOn() && rand.nextInt(4) == 0 && !world.isRemote) {
                         if (this.getTrainLockedFromPacket() && !((EntityPlayer) this.riddenByEntity).getDisplayName().getUnformattedText()
                                 .toLowerCase().equals(this.getTrainOwner().toLowerCase())) {
                             return;
                         }
                         if (riddenByEntity instanceof EntityPlayer) {
-                            int dir = MathHelper
-                                    .floor((((EntityPlayer) riddenByEntity).rotationYaw * 4F) / 360F + 0.5D) & 3;
+                            int dir = throttleDir((EntityPlayer) riddenByEntity);
                             if (dir == 2) {
                                 if (forwardPressed) {
                                     motionZ -= 0.0075 * this.accelerate;
