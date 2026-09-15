@@ -58,11 +58,11 @@ public class InventoryZepp extends Container {
 			ItemStack itemstack1 = slot.getStack();
 			itemstack = itemstack1.copy();
 			if (i < inventorySize) {
-				if (!mergeItemStack(itemstack1, inventorySize, inventorySlots.size(), true)) { return null; }
+				if (!mergeItemStack(itemstack1, inventorySize, inventorySlots.size(), true)) { return ItemStack.EMPTY; }
 			}
-			else if (!mergeItemStack(itemstack1, 0, inventorySize, false)) { return null; }
+			else if (!mergeItemStack(itemstack1, 0, inventorySize, false)) { return ItemStack.EMPTY; }
 			if (itemstack1.getCount() == 0) {
-				slot.putStack(null);
+				slot.putStack(ItemStack.EMPTY);
 			}
 			else {
 				slot.onSlotChanged();

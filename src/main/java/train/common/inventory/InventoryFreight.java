@@ -51,21 +51,21 @@ public class InventoryFreight extends Container {
 			if(slot2 != null && slot2.isItemValid(itemstack)) {
     			if (i < height * 9) {
     				if (!mergeItemStack(itemstack1, height * 9, inventorySlots.size(), true)) {
-    					return null;
+    					return ItemStack.EMPTY;
     				}
     			}
     			else if (!mergeItemStack(itemstack1, 0, height * 9, false)) {
-    				return null;
+    				return ItemStack.EMPTY;
     			}
     			if (itemstack1.getCount() == 0) {
-    				slot.putStack(null);
+    				slot.putStack(ItemStack.EMPTY);
     			}
     			else {
     				slot.onSlotChanged();
     			}
 			}
 			else {
-				return null;
+				return ItemStack.EMPTY;
 			}
 		}
 		return itemstack;

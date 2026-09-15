@@ -142,9 +142,12 @@ public class BlockTCRail extends Block {
 		int l = state.getBlock().getMetaFromState(state);
 		if (!world.isRemote && te != null && (te instanceof TileTCRail)) {
 			if (player != null && player.inventory != null && player.inventory.getCurrentItem() != null && (player.inventory.getCurrentItem().getItem() instanceof ItemWrench) && ((TileTCRail) te).getType() != null && ((TileTCRail) te).getType().equals(ItemTCRail.TrackTypes.SMALL_STRAIGHT.getLabel())) {
-				l++;
-				if (l > 3) l = 0;
-				world.setBlockState(pos, this.getStateFromMeta(l), 2);
+				// The rail block has no direction in its metadata on 1.12 (it is always 0); the real
+				// direction lives on the tile. Rotate that, or the wrench does nothing the trains see.
+				l = (((TileTCRail) te).getFacing() + 1) % 4;
+				((TileTCRail) te).setFacing(l);
+				((TileTCRail) te).markDirty();
+				world.notifyBlockUpdate(pos, state, state, 3);
 				((TileTCRail) te).hasRotated = true;
 				return true;
 			}

@@ -94,7 +94,7 @@ public class InventoryWorkCart extends Container {
 
 			if (par1 == 2) {
 				if (!this.mergeItemStack(var5, 3, 39, true)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 
 				var4.onSlotChange(var5, var3);
@@ -102,34 +102,34 @@ public class InventoryWorkCart extends Container {
 			else if (par1 != 1 && par1 != 0) {
 				if (FurnaceRecipes.instance().getSmeltingResult(var5) != null) {
 					if (!this.mergeItemStack(var5, 0, 1, false)) {
-						return null;
+						return ItemStack.EMPTY;
 					}
 				}
 				else if (TileEntityFurnace.isItemFuel(var5)) {
 					if (!this.mergeItemStack(var5, 1, 2, false)) {
-						return null;
+						return ItemStack.EMPTY;
 					}
 				}
 				else if (par1 >= 3 && par1 < 30) {
 					if (!this.mergeItemStack(var5, 30, 39, false)) {
-						return null;
+						return ItemStack.EMPTY;
 					}
 				}
 				else if (par1 >= 30 && par1 < 39 && !this.mergeItemStack(var5, 3, 30, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			}
 			else if (!this.mergeItemStack(var5, 3, 39, false)) {
-				return null;
+				return ItemStack.EMPTY;
 			}
 			if (var5.getCount() == 0) {
-				var4.putStack(null);
+				var4.putStack(ItemStack.EMPTY);
 			}
 			else {
 				var4.onSlotChanged();
 			}
 			if (var5.getCount() == var3.getCount()) {
-				return null;
+				return ItemStack.EMPTY;
 			}
 			var4.onTake(player, var5);
 		}

@@ -104,15 +104,15 @@ public class InventoryBuilder extends Container {
 				// move to player inventory
 			if (i <= inventorySize) {
 				if (!mergeItemStack(itemstack1, inventorySize, inventorySlots.size(), true)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			}
 				// move to builder inventory
 			else if (!mergeItemStack(itemstack1, 0, 20, false)) {
-				return null;
+				return ItemStack.EMPTY;
 			}
 			if (itemstack1.getCount() == 0) {
-				slot.putStack(null);
+				slot.putStack(ItemStack.EMPTY);
 			}
 			else {
 				slot.onSlotChanged();

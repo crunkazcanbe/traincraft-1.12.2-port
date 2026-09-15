@@ -710,4 +710,15 @@ public abstract class AbstractZeppelin extends Entity implements IInventory {
 
 		return I18n.format("entity." + s + ".name");
 	}
+
+	/**
+	 * 1.12 delivers the server's position updates through setPositionAndRotationDirect. This mod
+	 * still carried the 1.7.10 name (setPositionAndRotation2), which 1.12 never calls, so the
+	 * client copy never moved: the real train drove off and a frozen "ghost" stayed behind.
+	 */
+	@Override
+	@net.minecraftforge.fml.relauncher.SideOnly(net.minecraftforge.fml.relauncher.Side.CLIENT)
+	public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int increments, boolean teleport) {
+		setPositionAndRotation2(x, y, z, yaw, pitch, increments);
+	}
 }

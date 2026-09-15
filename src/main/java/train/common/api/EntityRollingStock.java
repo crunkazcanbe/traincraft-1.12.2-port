@@ -1206,9 +1206,9 @@ public abstract class EntityRollingStock extends AbstractTrains {
 				if (bogieLoco != null) {
 					if (!bogieLoco.isOnRail()) {
 						this.unLink();
-						moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), (world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())) + 1) % 4);
+						moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), (tile.getFacing() + 1) % 4);
 					} else {
-						int meta = world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos()));
+						int meta = tile.getFacing();
 						if (shouldIgnoreSwitch(tile, i, j, k, meta)) {
 							moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), meta);
 						} else {
@@ -1220,7 +1220,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 						// cz, tile.getType(), meta);
 					}
 				} else {
-					int meta = world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos()));
+					int meta = tile.getFacing();
 					if (shouldIgnoreSwitch(tile, i, j, k, meta)) {
 						moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), meta);
 					} else {
@@ -1230,22 +1230,22 @@ public abstract class EntityRollingStock extends AbstractTrains {
 				}
 			}
 			if (ItemTCRail.isTCStraightTrack(tile)) {
-				moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+				moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), tile.getFacing());
 			}
 			if (ItemTCRail.isTCSlopeTrack(tile)) {
-				moveOnTCSlope(j, tile.getPos().getX(), tile.getPos().getZ(), tile.slopeAngle, world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+				moveOnTCSlope(j, tile.getPos().getX(), tile.getPos().getZ(), tile.slopeAngle, tile.getFacing());
 			}
 			if (ItemTCRail.isTCTwoWaysCrossingTrack(tile)) {
-				moveOnTCTwoWaysCrossing(i, j, k, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+				moveOnTCTwoWaysCrossing(i, j, k, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ(), tile.getFacing());
 			}
 			if (ItemTCRail.isTCDiagonalCrossingTrack(tile)) {
-				moveOnTCDiamondCrossing(i, j, k, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+				moveOnTCDiamondCrossing(i, j, k, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ(), tile.getFacing());
 			}
 			if (ItemTCRail.isTCDiagonalStraightTrack(tile)) {
-				moveOnTCDiagonal(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())), tile.getRailLength());
+				moveOnTCDiagonal(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), tile.getFacing(), tile.getRailLength());
 			}
 			if (ItemTCRail.isTCCurvedSlopeTrack(tile)) {
-				moveOnTCCurvedSlope(i, j, k, tile.r, tile.cx, tile.cz, tile.getPos().getX(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())), 1, tile.slopeAngle);
+				moveOnTCCurvedSlope(i, j, k, tile.r, tile.cx, tile.cz, tile.getPos().getX(), tile.getPos().getZ(), tile.getFacing(), 1, tile.slopeAngle);
 			}
 
 		}
@@ -1262,18 +1262,18 @@ public abstract class EntityRollingStock extends AbstractTrains {
 					moveOnTC90TurnRail(i, j, k, tile.r, tile.cx, tile.cz);
 				}
 				if (ItemTCRail.isTCStraightTrack(tile)) {
-					moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+					moveOnTCStraight(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), tile.getFacing());
 				}
 				if (ItemTCRail.isTCSlopeTrack(tile)) {
-					moveOnTCSlope(j, tile.getPos().getX(), tile.getPos().getZ(), tile.slopeAngle, world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+					moveOnTCSlope(j, tile.getPos().getX(), tile.getPos().getZ(), tile.slopeAngle, tile.getFacing());
 				}
 				if (ItemTCRail.isTCDiagonalStraightTrack(tile)) {
-					moveOnTCDiagonal(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())), tile.getRailLength());
+					moveOnTCDiagonal(i, j, k, tile.getPos().getX(), tile.getPos().getZ(), tile.getFacing(), tile.getRailLength());
 				} else if (ItemTCRail.isTCDiagonalCrossingTrack(tile)) {
-					moveOnTCDiamondCrossing(i, j, k, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())));
+					moveOnTCDiamondCrossing(i, j, k, tile.getPos().getX(), tile.getPos().getY(), tile.getPos().getZ(), tile.getFacing());
 				}
 				if (ItemTCRail.isTCCurvedSlopeTrack(tile)) {
-					moveOnTCCurvedSlope(i, j, k, tile.r, tile.cx, tile.cz, tile.getPos().getX(), tile.getPos().getZ(), world.getBlockState(tile.getPos()).getBlock().getMetaFromState(world.getBlockState(tile.getPos())), 1, tile.slopeAngle);
+					moveOnTCCurvedSlope(i, j, k, tile.r, tile.cx, tile.cz, tile.getPos().getX(), tile.getPos().getZ(), tile.getFacing(), 1, tile.slopeAngle);
 				}
 			}
 		}
@@ -2690,4 +2690,15 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	}
 
 	public ItemStack[] getInventory(){return null;}
+
+	/**
+	 * 1.12 delivers the server's position updates through setPositionAndRotationDirect. This mod
+	 * still carried the 1.7.10 name (setPositionAndRotation2), which 1.12 never calls, so the
+	 * client copy never moved: the real train drove off and a frozen "ghost" stayed behind.
+	 */
+	@Override
+	@net.minecraftforge.fml.relauncher.SideOnly(net.minecraftforge.fml.relauncher.Side.CLIENT)
+	public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int increments, boolean teleport) {
+		setPositionAndRotation2(x, y, z, yaw, pitch, increments);
+	}
 }

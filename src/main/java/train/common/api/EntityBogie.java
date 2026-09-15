@@ -454,10 +454,10 @@ public class EntityBogie extends EntityMinecart {
 
 					if (ItemTCRail.isTCTurnTrack(tileRail)) {
 
-						int meta = world.getBlockState(tileRail.getPos()).getBlock().getMetaFromState(world.getBlockState(tileRail.getPos()));
+						int meta = tileRail.getFacing();
 
 					if (shouldIgnoreSwitch(tileRail, i, j, k, meta)) {
-						moveOnTCStraight(j, tileRail.getPos().getX(), tileRail.getPos().getZ(), world.getBlockState(tileRail.getPos()).getBlock().getMetaFromState(world.getBlockState(tileRail.getPos())));
+						moveOnTCStraight(j, tileRail.getPos().getX(), tileRail.getPos().getZ(), tileRail.getFacing());
 					} else {
 						if (ItemTCRail.isTCTurnTrack(tileRail))
 							moveOnTC90TurnRail(j, tileRail.r, tileRail.cx, tileRail.cz);
@@ -470,7 +470,7 @@ public class EntityBogie extends EntityMinecart {
 
 					if (ItemTCRail.isTCStraightTrack(tileRail)) {
 
-						moveOnTCStraight(j, tileRail.getPos().getX(), tileRail.getPos().getZ(), world.getBlockState(tileRail.getPos()).getBlock().getMetaFromState(world.getBlockState(tileRail.getPos())));
+						moveOnTCStraight(j, tileRail.getPos().getX(), tileRail.getPos().getZ(), tileRail.getFacing());
 					}
 
 					else if (ItemTCRail.isTCTwoWaysCrossingTrack(tileRail)) {
@@ -480,7 +480,7 @@ public class EntityBogie extends EntityMinecart {
 
 					else if (ItemTCRail.isTCSlopeTrack(tileRail)) {
 
-						moveOnTCSlope(j, tileRail.getPos().getX(), tileRail.getPos().getZ(), tileRail.slopeAngle, tileRail.slopeHeight, world.getBlockState(tileRail.getPos()).getBlock().getMetaFromState(world.getBlockState(tileRail.getPos())));
+						moveOnTCSlope(j, tileRail.getPos().getX(), tileRail.getPos().getZ(), tileRail.slopeAngle, tileRail.slopeHeight, tileRail.getFacing());
 					}
 			}
 			// this.func_145775_I(); // removed in 1.12.2
@@ -752,5 +752,16 @@ public class EntityBogie extends EntityMinecart {
 		this.minecartYaw = p_70056_7_;
 		this.minecartPitch = p_70056_8_;
 		this.turnProgress = p_70056_9_ + 2;
+	}
+
+	/**
+	 * 1.12 delivers the server's position updates through setPositionAndRotationDirect. This mod
+	 * still carried the 1.7.10 name (setPositionAndRotation2), which 1.12 never calls, so the
+	 * client copy never moved: the real train drove off and a frozen "ghost" stayed behind.
+	 */
+	@Override
+	@net.minecraftforge.fml.relauncher.SideOnly(net.minecraftforge.fml.relauncher.Side.CLIENT)
+	public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int increments, boolean teleport) {
+		setPositionAndRotation2(x, y, z, yaw, pitch, increments);
 	}
 }

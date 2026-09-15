@@ -46,7 +46,7 @@ public class ContainerGeneratorDiesel extends Container {
 				return ItemStack.EMPTY;
 			}
 			if (itemstack1.isEmpty()) {
-				slot.putStack(null);
+				slot.putStack(ItemStack.EMPTY);
 			}
 			else {
 				slot.onSlotChanged();
