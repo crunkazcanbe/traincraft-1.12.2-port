@@ -25,4 +25,7 @@ public class GuiIDs {
 	public static final int JUKEBOX = 102;
 	public static final int MTC_INFO = 103;
 	public static final int SPEED_TRANSMITTER = 104;
+	/** Paintbrush colour menu. 1.7.10-CE had GuiPaintbrushMenu; the port dropped it, so
+	 *  the paintbrush item advertised "Shift-right-click to open the texture menu" and did nothing. */
+	public static final int PAINTBRUSH = 105;
 }

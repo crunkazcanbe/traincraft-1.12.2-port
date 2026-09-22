@@ -603,7 +603,12 @@ public abstract class AbstractTrains extends EntityMinecart implements IEntityAd
 			case 101:
 				return "Full";
 			default:
-				return "" + getColor();
+				// A cart with no colour set yet reports -1, and models that build their
+				// texture name as "<name>_" + this (C62 front/back/tender_bogie) then asked
+				// for c62_front_-1.png and rendered untextured. Black is index 0 and is the
+				// default every colourable train ships -- ModelD51Tender already hardcodes
+				// "..._black.png" for exactly this reason.
+				return getColor() < 0 ? "Black" : "" + getColor();
 		}
 	}
 

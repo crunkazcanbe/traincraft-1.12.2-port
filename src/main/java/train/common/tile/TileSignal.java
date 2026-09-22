@@ -75,30 +75,42 @@ public class TileSignal extends TileEntity implements ITickable {
 		int x4 = 1;// x1
 		int x5 = 1;// z1
 
+		/*
+		 * This switch used to test 2/3/4/5 -- the old ForgeDirection numbering
+		 * (2=north,3=south,4=west,5=east). But BlockSignal#onBlockPlacedBy stores rot as
+		 * 0..3 (verified in game: a freshly placed signal reads rot=1), so NONE of those
+		 * cases matched and every signal fell through to the default 1-block box. The
+		 * signal therefore only ever braked a cart sitting directly on top of it, instead
+		 * of the 9 blocks of approach it is supposed to watch.
+		 *
+		 * Directions derived from BlockSignal#onBlockPlacedBy:
+		 *   rot 0 = west, 1 = north, 2 = east, 3 = south
+		 * Box extents kept byte-for-byte from the old cases, just attached to the right rot.
+		 */
 		switch (this.rot) {
 
-		case 2:
+		case 1: // north: watch -Z  (was case 2)
 			x4 = -1;
 			x5 = -9;
 			x1 = 1;
 			x3 = 1;
 			break;
 
-		case 3:
+		case 3: // south: watch +Z  (was case 3)
 			x3 = 9;
 			x1 = 1;
 			x4 = -1;
 			x5 = 1;
 			break;
 
-		case 4:
+		case 0: // west: watch -X   (was case 4)
 			x4 = -9;
 			x5 = -1;
 			x1 = 1;
 			x3 = 1;
 			break;
 
-		case 5:
+		case 2: // east: watch +X   (was case 5)
 			x3 = 1;
 			x1 = 9;
 			x4 = 1;

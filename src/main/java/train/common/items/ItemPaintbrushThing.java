@@ -23,6 +23,10 @@ public class ItemPaintbrushThing extends Item {
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        tooltip.add("§7" + TextFormatting.GREEN + "Shift-right-click" + TextFormatting.GRAY + " on a train to open the texture menu.");
+        tooltip.add("§7" + TextFormatting.GREEN + "Shift-right-click" + TextFormatting.GRAY + " on a train to open the colour menu.");
     }
+
+    // The interaction lives in EntityRollingStock#processInitialInteract next to the existing
+    // dye handling, NOT here: itemInteractionForEntity only fires for EntityLivingBase targets
+    // and a cart is an EntityMinecart, so this item could never have hooked it that way.
 }

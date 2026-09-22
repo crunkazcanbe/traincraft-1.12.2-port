@@ -133,6 +133,12 @@ public class ClientProxy extends CommonProxy {
 		ClientRegistry.bindTileEntitySpecialRenderer(TileowoYardSwitchStand.class, new RenderowoYardSwtichStand());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileMILWSwitchStand.class, new RenderMILWSwitchStand());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileautoSwitchStand.class, new RenderautoSwitchStand());
+		// kSignal and signalSpanish had NO renderer: their Render/Model classes were dropped in
+		// the port, so the blocks fell back to a JSON model that stretched a 512x64 TESR texture
+		// over a cube (hence FML's "broken aspect ratio" complaint). Models recovered from the
+		// 1.7.10-CE jar with Vineflower -- pure TMT, only the package name differed.
+		ClientRegistry.bindTileEntitySpecialRenderer(TilekSignal.class, new train.client.render.renderSwitch.RenderkSignal());
+		ClientRegistry.bindTileEntitySpecialRenderer(TilesignalSpanish.class, new train.client.render.renderSwitch.RendersignalSpanish());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileSpeedSign.class, new RenderSpeedSign());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileoverheadWire.class, new RenderoverheadWire());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileoverheadWireDouble.class, new RenderoverheadWireDouble());
@@ -172,6 +178,11 @@ public class ClientProxy extends CommonProxy {
 			return te != null && te instanceof TileEntityOpenHearthFurnace ? new GuiOpenHearthFurnace(player.inventory, (TileEntityOpenHearthFurnace) te) : null;
 		case GuiIDs.TRAIN_WORKBENCH:
 			return te != null && te instanceof TileTrainWbench ? new GuiTrainCraftingBlock(player.inventory, player.world, (TileTrainWbench) te) : null;
+		// Opened with y == -1 and x == the target's entity id, so it resolves through entity1
+		// (the paintbrush is used ON a cart, not from inside one).
+		case (GuiIDs.PAINTBRUSH):
+			return entity1 instanceof train.common.api.AbstractTrains
+					? new train.client.gui.GuiPaintbrush((train.common.api.AbstractTrains) entity1) : null;
 		case (GuiIDs.LOCO):
 			return riddenByEntity != null ? new GuiLoco2(riddenByEntity.inventory, entity) : null;
 		case (GuiIDs.FORNEY):

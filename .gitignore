@@ -48,12 +48,3 @@ src/main/java/train/common/api/TrainsOnClick.java
 .codebase-memory/
 graphify-out/
 *.bak
-
-build/
-run/
-.gradle/
-libs/*.jar
-graphify-out/
-.recall/
-.impeccable/
-__pycache__/

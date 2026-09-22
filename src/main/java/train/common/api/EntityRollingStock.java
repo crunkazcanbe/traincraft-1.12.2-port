@@ -1,5 +1,7 @@
 package train.common.api;
 
+import train.common.library.Info;
+
 import com.mojang.authlib.GameProfile;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -41,6 +43,8 @@ import net.minecraftforge.event.entity.minecart.MinecartInteractEvent;
 import net.minecraftforge.event.entity.minecart.MinecartUpdateEvent;
 import train.client.core.handlers.SoundUpdaterRollingStock;
 import train.common.Traincraft;
+import train.common.library.GuiIDs;
+import train.common.library.ItemIDs;
 import train.common.adminbook.ServerLogger;
 import train.common.blocks.BlockTCRail;
 import train.common.blocks.BlockTCRailGag;
@@ -548,6 +552,41 @@ public abstract class EntityRollingStock extends AbstractTrains {
 		this.pressKey(i);
 	}
 
+	/**
+	 * Rebuild cartLinked1/cartLinked2 from the SAVED Link1/Link2 ids.
+	 *
+	 * Coupling stores two things: Link1/Link2 (the other cart's uniqueTrainID, which IS
+	 * written to NBT) and cartLinked1/cartLinked2 (live object refs, which are NOT). Nothing
+	 * ever rebuilt the refs from the ids, so after a world reload every cart came back with
+	 * attached=true and Link1=<id> but cartLinked1=null -- verified in game. The consist
+	 * therefore looked coupled, pulled nothing, and the carts drifted into each other.
+	 */
+	private void restoreLinksFromSavedIDs() {
+		if (world.isRemote) return;
+
+		boolean needRestore1 = (Link1 != 0 && Link1 != -1 && cartLinked1 == null);
+		boolean needRestore2 = (Link2 != 0 && Link2 != -1 && cartLinked2 == null);
+
+		if (!needRestore1 && !needRestore2) return;
+
+		java.util.List<train.common.api.EntityRollingStock> near = world.getEntitiesWithinAABB(
+				train.common.api.EntityRollingStock.class, getEntityBoundingBox().grow(24.0D));
+
+		for (train.common.api.EntityRollingStock other : near) {
+			if (other == this) continue;
+			int oid = other.getUniqueTrainID();
+
+			if (cartLinked1 == null && Link1 != 0 && Link1 != -1 && ((int) Link1) == oid) {
+				cartLinked1 = other;
+				continue;
+			}
+
+			if (cartLinked2 == null && Link2 != 0 && Link2 != -1 && ((int) Link2) == oid) {
+				cartLinked2 = other;
+			}
+		}
+	}
+
 	private void handleTrain() {
 		if (this instanceof Locomotive && train != null) {
 			for (int i2 = 0; i2 < train.getTrains().size(); i2++) {
@@ -590,6 +629,8 @@ public abstract class EntityRollingStock extends AbstractTrains {
 		 * is put down or when the world reloads
 		 */
 		if (ticksExisted % 40 != 0) return;
+		// links are object refs and do not survive a save; rebuild them from the saved ids
+		restoreLinksFromSavedIDs();
 		if (allTrains.size() == 0) {
 			//System.out.println("array empty");
 			if ((this.cartLinked1 != null || this.cartLinked2 != null)) {
@@ -965,7 +1006,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 			// client will render from, to pin down the sideways-on-N-S-track bug. Remove once fixed.
 			if (!rotTraceLogged && !world.isRemote) {
 				rotTraceLogged = true;
-				System.out.println("[TC-ROT-TRACE] " + getClass().getSimpleName()
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-ROT-TRACE] " + getClass().getSimpleName()
 						+ " rotationYaw=" + rotationYaw + " serverRealRotation=" + serverRealRotation
 						+ (bogieLoco != null ? " bogieOffset=(" + String.format("%.2f", bogieLoco.posX - posX) + "," + String.format("%.2f", bogieLoco.posZ - posZ) + ")" : " noBogie"));
 			}
@@ -1343,7 +1384,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	private void moveOnTCStraight(int i, int j, int k, double cx, double cz, int meta) {
 		// [TC-RAIL-DEBUG] is the rail mover even running, and on which axis?
 		if (!world.isRemote && this instanceof Locomotive && ticksExisted % 20 == 0) {
-			System.out.println("[TC-RAIL] moveOnTCStraight meta=" + meta
+			if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RAIL] moveOnTCStraight meta=" + meta
 				+ " axis=" + ((meta == 2 || meta == 0) ? "Z" : "X")
 				+ " railJ=" + j
 				+ " posYin=" + String.format("%.3f", this.posY)
@@ -1369,7 +1410,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 			// [TC-RAIL-DEBUG] a non-empty collision list here aborts the move entirely
 			if (!world.isRemote && this instanceof Locomotive && ticksExisted % 20 == 0) {
 				java.util.List<net.minecraft.util.math.AxisAlignedBB> dbgBoxes = world.getCollisionBoxes(this, offsetBBZ);
-				System.out.println("[TC-RAIL] Z-branch norm=" + String.format("%.5f", norm)
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RAIL] Z-branch norm=" + String.format("%.5f", norm)
 					+ " newMZ=" + String.format("%.5f", motionZ)
 					+ " collisions=" + dbgBoxes.size()
 					+ (dbgBoxes.isEmpty() ? " -> MOVING" : " -> BLOCKED " + dbgBoxes.get(0)));
@@ -1380,7 +1421,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 					(offsetBBZ.minZ + offsetBBZ.maxZ) * 0.5
 			);
 			if (!world.isRemote && this instanceof Locomotive && ticksExisted % 20 == 0) {
-				System.out.println("[TC-RAIL] Z-settled posY=" + String.format("%.3f", this.posY)
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RAIL] Z-settled posY=" + String.format("%.3f", this.posY)
 					+ " bbMinY=" + String.format("%.3f", this.getEntityBoundingBox().minY)
 					+ " railJ=" + j + " (railY-alt would be " + String.format("%.3f", railY) + ")");
 			}
@@ -1400,7 +1441,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 			// [TC-RAIL-DEBUG] a non-empty collision list here aborts the move entirely
 			if (!world.isRemote && this instanceof Locomotive && ticksExisted % 20 == 0) {
 				java.util.List<net.minecraft.util.math.AxisAlignedBB> dbgBoxes = world.getCollisionBoxes(this, offsetBBX);
-				System.out.println("[TC-RAIL] X-branch newMX=" + String.format("%.5f", motionX)
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RAIL] X-branch newMX=" + String.format("%.5f", motionX)
 					+ " collisions=" + dbgBoxes.size()
 					+ (dbgBoxes.isEmpty() ? " -> MOVING" : " -> BLOCKED " + dbgBoxes.get(0)));
 			}
@@ -1410,7 +1451,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 					(offsetBBX.minZ + offsetBBX.maxZ) * 0.5
 			);
 			if (!world.isRemote && this instanceof Locomotive && ticksExisted % 20 == 0) {
-				System.out.println("[TC-RAIL] X-settled posY=" + String.format("%.3f", this.posY)
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RAIL] X-settled posY=" + String.format("%.3f", this.posY)
 					+ " bbMinY=" + String.format("%.3f", this.getEntityBoundingBox().minY)
 					+ " railJ=" + j + " (railY-alt would be " + String.format("%.3f", railY) + ")");
 			}
@@ -1841,6 +1882,22 @@ public abstract class EntityRollingStock extends AbstractTrains {
 		 * If the color is valid for the cart, then change it and reduce
 		 * itemstack size
 		 */
+		/**
+		 * Paintbrush: its tooltip promised "Shift-right-click on a train to open the colour
+		 * menu", but the port dropped GuiPaintbrushMenu AND never hooked the item, so it did
+		 * nothing at all. Handled here rather than on the Item because
+		 * Item#itemInteractionForEntity only fires for EntityLivingBase and a cart is an
+		 * EntityMinecart. Sitting beside the dye path means it inherits the same lock checks.
+		 */
+		if (itemstack != null && itemstack.getItem() == ItemIDs.paintbrushThing.item
+				&& entityplayer.isSneaking()) {
+			if (world.isRemote) {
+				entityplayer.openGui(Traincraft.instance,
+						GuiIDs.PAINTBRUSH, world, this.getEntityId(), -1, 0);
+			}
+			return true;
+		}
+
 		if (itemstack != null && itemstack.getItem() instanceof ItemDye) {
 			if (this.acceptedColors != null && this.acceptedColors.size() > 0) {
 				for (int i = 0; i < this.acceptedColors.size(); i++) {

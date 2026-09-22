@@ -28,6 +28,7 @@ import train.common.api.LiquidManager;
 import train.common.blocks.TCBlocks;
 import train.common.core.CommonProxy;
 import train.common.core.CreativeTabTraincraft;
+import train.common.core.CreativeTabTraincraftTrains;
 import train.common.core.TrainModCore;
 import train.common.core.handlers.*;
 import train.common.generation.ComponentVillageTrainstation;
@@ -90,6 +91,7 @@ public class Traincraft {
 
 	/* Creative tab for Traincraft */
 	public static CreativeTabs tcTab;
+	public static CreativeTabs tcTabTrains;
 
 	public ArmorMaterial armor = EnumHelper.addArmorMaterial("Armor", "traincraft:armor", 5, new int[] { 1, 2, 2, 1 }, 25, net.minecraft.init.SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
 	public ArmorMaterial armorCloth = EnumHelper.addArmorMaterial("TCcloth", "traincraft:tccloth", 5, new int[] {1, 2, 2, 1}, 25, net.minecraft.init.SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0.0F);
@@ -114,6 +116,10 @@ public class Traincraft {
 		/* Register Items, Blocks, ... */
 		tcLog.info("Initialize Blocks, Items, ...");
 		tcTab = new CreativeTabTraincraft(CreativeTabs.getNextID(), "Traincraft");
+		// 1.7.10-CE had a SECOND tab just for rolling stock (CreativeTabTraincraftTrains);
+		// the port dropped it, so all ~500 trains were dumped in with ~1600 other items and
+		// were effectively unfindable in creative. Restored.
+		tcTabTrains = new CreativeTabTraincraftTrains(CreativeTabs.getNextID(), "TraincraftTrains");
 		trainArmor = proxy.addArmor("armor");
 		trainCloth = proxy.addArmor("Paintable");
 		trainCompositeSuit = proxy.addArmor("CompositeSuit");

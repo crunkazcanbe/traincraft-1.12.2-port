@@ -3,6 +3,9 @@ package train.client.render;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import org.lwjgl.opengl.GL11;
+import train.common.library.Info;
+import tmt.Tessellator;
+import net.minecraft.util.ResourceLocation;
 import train.client.render.models.blocks.ModelBlockSignal;
 import train.common.tile.TileSignal;
 
@@ -16,12 +19,13 @@ public class RenderSignal extends TileEntitySpecialRenderer {
 	public void renderAModelAt(TileSignal var1, double d, double d1, double d2, float f) {
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) d + 0.46F, (float) d1 + 0.0F, (float) d2 + 0.46F);
-		/*if (var1.state == 1) {
-			bindTextureByName(Info.trainsPrefix + "signal_suisse_green.png");
-		}
-		else {
-			bindTextureByName(Info.trainsPrefix + "signal_suisse_red.png");
-		}*/
+		// These binds were commented out during the port because bindTextureByName(String) does
+		// not exist in 1.12.2 -- but nothing replaced them, so the model drew with whatever
+		// texture happened to be bound last (the block atlas) and the signal appeared as a tall
+		// column of garbled multicoloured pixels. Only visible once the block itself was
+		// actually registered. state: 0 = red, 1 = green.
+		Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation,
+				Info.trainsPrefix + (var1.state == 1 ? "signal_suisse_green.png" : "signal_suisse_red.png")));
 		modelSignal.render(0.0625F, var1.getFacing());
 		GL11.glPopMatrix();
 	}

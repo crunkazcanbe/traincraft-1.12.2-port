@@ -47,7 +47,7 @@ public class ItemRollingStock extends ItemMinecart {
 		this.iconName = iconName;
 		maxStackSize = 1;
 		trainName = this.getTranslationKey();
-		setCreativeTab(Traincraft.tcTab);
+		setCreativeTab(Traincraft.tcTabTrains);
 	}
 
 	public static ItemStack setPersistentData(@Nullable ItemStack oldStack, @Nullable AbstractTrains train, @Nullable Integer trainID, @Nullable EntityPlayer player) {

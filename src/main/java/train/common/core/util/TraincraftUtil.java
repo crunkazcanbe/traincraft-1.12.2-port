@@ -1,5 +1,7 @@
 package train.common.core.util;
 
+import train.common.library.Info;
+
 import net.minecraft.block.BlockRailBase;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -123,7 +125,7 @@ public class TraincraftUtil{
         rider.setPosition(transport.posX + dx, y, transport.posZ + dz);
         // [TC-RIDE-DEBUG] where does the rider actually end up vs the train?
         if (transport.ticksExisted % 20 == 0) {
-            System.out.println("[TC-RIDE] side=" + (transport.world.isRemote ? "CLIENT" : "SERVER")
+            if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RIDE] side=" + (transport.world.isRemote ? "CLIENT" : "SERVER")
                 + " trainY=" + String.format("%.3f", transport.posY)
                 + " trainZ=" + String.format("%.3f", transport.posZ)
                 + " riderY=" + String.format("%.3f", rider.posY)

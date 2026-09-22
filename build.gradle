@@ -53,6 +53,15 @@ processResources {
     inputs.property "version", project.version
     inputs.property "mcversion", "1.12.2"
 
+    // Tooling scratch folders live all through src/main/resources (.recall holds chat
+    // transcripts, 8MB+ of them). Without this they are copied into the jar verbatim:
+    // a build straight from build/libs shipped assets/tc/.recall/history.md at 57KB.
+    // A task-level exclude covers every `from` spec below, so it cannot be missed again.
+    exclude '**/.recall/**'
+    exclude '**/.impeccable/**'
+    exclude '**/graphify-out/**'
+    exclude '**/.capture.json'
+
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
         expand 'version': project.version, 'mcversion': "1.12.2"

@@ -57,6 +57,3 @@ invented here. Please keep their names attached to any use of this work (see Cre
 
 Bundled third-party dependency licenses (Forge, FML, Railcraft, CoFH/LGPLv3) are also included in the repo.
 If you are a Traincraft author and want this handled differently, please open an issue — it will be respected.
-
-### Compile-only jar
-Put `buildcraft-8.0.0-deduped.jar` (BuildCraft 8.0.0 for 1.12.2) into `libs/` before building — it is not redistributed here.

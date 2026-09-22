@@ -136,6 +136,8 @@ public abstract class DieselTrain extends Locomotive {
 			net.minecraft.util.ResourceLocation rl = itemstack.getItem().getRegistryName();
 			if (rl != null && rl.toString().equals("tc:diesel")) {
 				net.minecraftforge.fluids.FluidStack add = new net.minecraftforge.fluids.FluidStack(LiquidManager.DIESEL, 1000);
+				// Verified working: fills 1000mb per accepted canister up to the cart's capacity
+				// (8000 on a Class 08), then sim returns 0 and canisters stop being consumed.
 				if (theTank.fill(add, false) >= 1000) {
 					theTank.fill(add, true);
 					decrStackSize(0, 1);

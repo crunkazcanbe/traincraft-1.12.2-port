@@ -310,7 +310,12 @@ public class GuiLoco2 extends GuiContainer {
 		fontRenderer.drawStringWithShadow("Brake reduction: " + loco.getCurrentBrakeSlowDown(), 1, 50, 0xFFFFFF);
 		fontRenderer.drawStringWithShadow("Fuel consumption: " + ((loco.getFuelConsumption() *0.2)+"").substring(0,Math.min(((loco.getFuelConsumption() *0.2)+"").length(),4))+ " mB/s", 1,
 				60, 0xFFFFFF);
-		fontRenderer.drawStringWithShadow("Fuel: " + loco.getFuel(), 1, 70, 0xFFFFFF);
+		// getFuel() is the SOLID-fuel (coal) counter, so a diesel loco always read "Fuel: 0"
+		// even with a full tank -- which looks exactly like a broken fuel system. A diesel's
+		// fuel lives in its liquid tank, i.e. getDiesel(), so show that (with its unit).
+		fontRenderer.drawStringWithShadow(loco instanceof DieselTrain
+				? "Fuel: " + ((DieselTrain) loco).getDiesel() + " mB"
+				: "Fuel: " + loco.getFuel(), 1, 70, 0xFFFFFF);
 		fontRenderer.drawStringWithShadow("Power: " + loco.getPower() + " Mhp", 1, 80, 0xFFFFFF);
 		fontRenderer.drawStringWithShadow("State: " + loco.getState(), 1, 90, 0xFFFFFF);
 		fontRenderer.drawStringWithShadow("Heat level: " + loco.getOverheatLevel(), 1, 100, 0xFFFFFF);

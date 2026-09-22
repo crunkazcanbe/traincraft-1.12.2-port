@@ -36,12 +36,21 @@ public class ModelSmallStraightTCTrack extends ModelBase {
 	}
 	
 	public void render(String type, TileTCRail tcRail, double x, double y, double z) {
+		render(type, tcRail, x, y, z, null);
+	}
+
+	/** texture != null overrides the bound texture: EMBEDDED_SMALL_STRAIGHT is the plain
+	 *  straight drawn with track_embedded.png (as in Traincraft 1.7.10-CE). */
+	public void render(String type, TileTCRail tcRail, double x, double y, double z, String texture) {
 
 		// Move the object into the correct position on the block (because the OBJ's origin is the center of the object)
 		GL11.glColor4f(1, 1, 1, 1);
 
 		// Bind the texture, so that OpenGL properly textures our block.
-		if (type.equals("straight")) {
+		if (texture != null) {
+			Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + texture));
+		}
+		else if (type.equals("straight")) {
  			Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + "track_normal.png"));
 		}
 		else if (type.equals("crossing")) {

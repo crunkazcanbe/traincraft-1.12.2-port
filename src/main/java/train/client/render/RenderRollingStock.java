@@ -233,7 +233,7 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 			// DIAGNOSTIC: print every candidate direction-value ONCE per loco so we can see
 			// which one actually differs by 90 between perpendicular (N-S vs E-W) tracks.
 			if (LOG_ONCE.add(cart.getEntityId())) {
-				System.out.println("[TC-ROT] " + cart.getClass().getSimpleName()
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-ROT] " + cart.getClass().getSimpleName()
 					+ " id=" + cart.getEntityId()
 					+ " rotationYaw=" + cart.rotationYaw
 					+ " serverRealRotation=" + cart.serverRealRotation
@@ -265,7 +265,7 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 			// [TC-FLIP] log any sudden 90+ degree turn of a loco body so a remaining flip shows its cause.
 			Float prevRot = LAST_ROT.put(cart.getEntityId(), locoRot);
 			if (prevRot != null && Math.abs(MathHelper.wrapDegrees(locoRot - prevRot)) > 60.0F) {
-				System.out.println("[TC-FLIP] " + cart.getClass().getSimpleName() + " " + prevRot + " -> " + locoRot
+				if (Info.DEBUG_MOVEMENT) System.out.println("[TC-FLIP] " + cart.getClass().getSimpleName() + " " + prevRot + " -> " + locoRot
 					+ " railDbg=[" + railDbg + "] rotationYaw=" + cart.rotationYaw + " motion=" + cart.motionX + "," + cart.motionZ);
 			}
 			GL11.glRotatef(locoRot, 0.0F, 1.0F, 0.0F);
@@ -280,7 +280,7 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 					pitch = -pitch;
 				}
 				if (LOG_ONCE.add(cart.getEntityId())) {
-						System.out.println("[TC-TRAIN-DEBUG] " + cart.getClass().getSimpleName()
+						if (Info.DEBUG_MOVEMENT) System.out.println("[TC-TRAIN-DEBUG] " + cart.getClass().getSimpleName()
 							+ " ON-RAIL branch  yaw=" + yaw + "  rotationYaw=" + cart.rotationYaw
 							+ "  var23null=" + (var23 == null) + "  glRotate(180-yaw)=" + (180.0F - yaw)
 							+ "  bogieLoco=" + (cart.bogieLoco != null));

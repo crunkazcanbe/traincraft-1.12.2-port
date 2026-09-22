@@ -53,6 +53,12 @@ public class PacketHandler {
 				6, Side.SERVER);
 		Traincraft.modChannel.registerMessage(PacketLantern.Handler.class, PacketLantern.class, 7,
 				Side.SERVER);
+		// Paintbrush colour menu. The colour only travels in writeSpawnData, so a change would
+		// not show until the cart reloaded -- hence the second, client-bound packet.
+		Traincraft.modChannel.registerMessage(PacketPaintbrushColor.Handler.class,
+				PacketPaintbrushColor.class, 30, Side.SERVER);
+		Traincraft.modChannel.registerMessage(PacketPaintbrushColorClient.Handler.class,
+				PacketPaintbrushColorClient.class, 31, Side.CLIENT);
 		Traincraft.builderChannel.registerMessage(PacketTrackBuilderHeight.Handler.class,
 				PacketTrackBuilderHeight.class, 8, Side.SERVER);
 		Traincraft.builderChannel.registerMessage(PacketTrackBuilderFollow.Handler.class,

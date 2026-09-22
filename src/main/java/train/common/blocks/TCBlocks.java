@@ -73,6 +73,20 @@ public class TCBlocks {
 		BlockIDs.owoYardSwitchStand.block = new BlockowoYardSwitchStand().setHardness(4F).setCreativeTab(Traincraft.tcTab);
 		BlockIDs.metroMadridPole.block = new BlockMetroMadridPole(Material.IRON).setHardness(2F).setCreativeTab(Traincraft.tcTab);
 		BlockIDs.speedSign.block = new BlockSpeedSign().setCreativeTab(Traincraft.tcTab);
+		/*
+		 * These SIX were declared in BlockIDs and never instantiated, so .block stayed null
+		 * and the registration loop below (which skips nulls) silently left them out of the
+		 * game entirely -- no signals and no catenary at all. Everything else for them already
+		 * shipped: the Block classes, their TileEntities (registered in CommonProxy), the
+		 * blockstate/model/item JSONs, the textures and the lang entries. Only these lines
+		 * were missing.
+		 */
+		BlockIDs.signal.block = new BlockSignal().setHardness(1.7F).setCreativeTab(Traincraft.tcTab);
+		BlockIDs.kSignal.block = new train.common.blocks.blockSwitch.BlockkSignal().setHardness(1.7F).setCreativeTab(Traincraft.tcTab);
+		BlockIDs.signalSpanish.block = new train.common.blocks.blockSwitch.BlocksignalSpanish().setHardness(1.7F).setCreativeTab(Traincraft.tcTab);
+		BlockIDs.autoSwitchStand.block = new train.common.blocks.blockSwitch.BlockautoSwitchStand().setHardness(2F).setCreativeTab(Traincraft.tcTab);
+		BlockIDs.overheadWire.block = new train.common.blocks.blockSwitch.BlockoverheadWire().setHardness(1F).setCreativeTab(Traincraft.tcTab);
+		BlockIDs.overheadWireDouble.block = new train.common.blocks.blockSwitch.BlockoverheadWireDouble().setHardness(1F).setCreativeTab(Traincraft.tcTab);
 		BlockIDs.asphaltSlab.block = new BlockAsphaltSlab(false);
 		BlockIDs.asphaltDoubleSlab.block = new BlockAsphaltSlab(true);
 		BlockIDs.asphaltStairs.block = new BlockAsphaltStairs(BlockIDs.asphalt.block.getDefaultState()).setHardness(2.0F).setLightOpacity(0);

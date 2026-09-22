@@ -20,9 +20,15 @@ public class ModelMediumStraightTCTrack extends ModelBase {
 	}
 
 	public void render(TileTCRail tcRail, double x, double y, double z) {
+		render(tcRail, x, y, z, "track_normal.png");
+	}
+
+	/** Same geometry, caller-chosen texture: the EMBEDDED_* straights are the plain
+	 *  straight bed drawn with track_embedded.png (as in Traincraft 1.7.10-CE). */
+	public void render(TileTCRail tcRail, double x, double y, double z, String texture) {
 
 		// Bind the texture, so that OpenGL properly textures our block.
-		Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + "track_normal.png"));
+		Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + texture));
 		GL11.glColor4f(1, 1, 1, 1);
 		//GL11.glScalef(0.5f, 0.5f, 0.5f);
 

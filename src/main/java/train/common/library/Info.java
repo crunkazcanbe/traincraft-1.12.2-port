@@ -24,6 +24,14 @@ public class Info {
 	public static final String guiPrefix = "textures/gui/";
 	public static final String bookPrefix = "textures/gui/book/";
 	public static final String trainsPrefix = "textures/trains/";
+
+	/**
+	 * Movement/fuel tracing. Left in because it is genuinely useful while finishing the
+	 * 1.12.2 port, but it used to print EVERY TICK a cart moved: a short test session put
+	 * 993 of 1586 log lines (63%) into TC-RAIL/TC-FUEL spam, which buries real errors and
+	 * costs performance. Must stay false in a release build.
+	 */
+	public static final boolean DEBUG_MOVEMENT = false;
 	public static final String zeppelinTexturePrefix = "textures/zeppelin/";
 	public static final String modelPrefix = "tc:models/";//"/src/train/Resources/Models/";
 	//public static final String modelPrefix2 = "models/";

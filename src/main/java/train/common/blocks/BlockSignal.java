@@ -51,7 +51,19 @@ public class BlockSignal extends BlockContainer {
 		return 4;
 	}
 
-	public void onBlockPlacedByOld(World world, BlockPos pos, IBlockState state, EntityLivingBase entityliving, ItemStack stack) {
+	/**
+	 * Was named onBlockPlacedByOld, so it OVERRODE NOTHING and was never called -- the signal
+	 * never got a facing, leaving TileSignal.rot at 0. The signature already matched 1.12.2,
+	 * so the rename during porting was simply never undone.
+	 *
+	 * KNOWN UPSTREAM INCONSISTENCY, deliberately not "fixed" here: this sets rot to 0-3, which
+	 * is what ModelBlockSignal's rotation switch expects, but TileSignal.update()'s
+	 * cart-detection box switches on 2-5 (the old ForgeDirection numbering). So two of the four
+	 * orientations fall through to the default 1-block box. Rotating the model correctly is the
+	 * safe half; remapping the detection box needs its own testing.
+	 */
+	@Override
+	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase entityliving, ItemStack stack) {
 		TileSignal te = (TileSignal) world.getTileEntity(pos);
 		int var6 = MathHelper.floor((double) (entityliving.rotationYaw * 4.0F / 360.0F) + 0.5D) & 3;
 		int var7 = world.getBlockState(pos).getBlock().getMetaFromState(world.getBlockState(pos)) >> 2;

@@ -52,7 +52,14 @@ public class ModelCETrack extends ModelBase {
      * the tile's facing, then draw. Rotation mirrors the existing turn models.
      */
     public void renderFacing(String objName, TileTCRail tcRail, double x, double y, double z) {
-        Tessellator.bindTexture(TRACK_TEX);
+        renderFacing(objName, null, tcRail, x, y, z);
+    }
+
+    /** typeName != null picks the embedded texture for EMBEDDED_* types, as 1.7.10 did. */
+    public void renderFacing(String objName, String typeName, TileTCRail tcRail, double x, double y, double z) {
+        Tessellator.bindTexture(typeName != null && typeName.contains("EMBEDDED")
+                ? new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + "track_embedded.png")
+                : TRACK_TEX);
         GL11.glColor4f(1, 1, 1, 1);
         switch (tcRail.getFacing()) {
             case 0: { GL11.glRotatef(-90, 0, 1, 0); break; }

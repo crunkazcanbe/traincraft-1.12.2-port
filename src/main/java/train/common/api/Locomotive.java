@@ -690,7 +690,7 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
         }
         // [TC-RIDE-DEBUG] catch the exact tick the rider is lost, and on which side.
         if (this.dbgWasRidden && !this.isBeingRidden()) {
-            System.out.println("[TC-RIDE] *** DISMOUNTED *** side=" + (world.isRemote ? "CLIENT" : "SERVER")
+            if (Info.DEBUG_MOVEMENT) System.out.println("[TC-RIDE] *** DISMOUNTED *** side=" + (world.isRemote ? "CLIENT" : "SERVER")
                 + " trainY=" + String.format("%.3f", this.posY)
                 + " trainZ=" + String.format("%.3f", this.posZ)
                 + " mZ=" + String.format("%.5f", this.motionZ)
@@ -750,7 +750,7 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
                 if (forwardPressed || backwardPressed) {
                     // [TC-THROTTLE-DEBUG] temporary: print which gate is blocking movement.
                     if (ticksExisted % 20 == 0) {
-                        System.out.println("[TC-THROTTLE] fuel=" + getFuel()
+                        if (Info.DEBUG_MOVEMENT) System.out.println("[TC-THROTTLE] fuel=" + getFuel()
                             + " on=" + this.isLocoTurnedOn()
                             + " rider=" + (this.riddenByEntity == null ? "NULL" : this.riddenByEntity.getName())
                             + " fwd=" + forwardPressed + " back=" + backwardPressed
@@ -760,7 +760,7 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
                         int dbgDir = (this.riddenByEntity instanceof EntityPlayer)
                             ? (MathHelper.floor((((EntityPlayer) this.riddenByEntity).rotationYaw * 4F) / 360F + 0.5D) & 3)
                             : -1;
-                        System.out.println("[TC-MOTION] pre  mX=" + String.format("%.5f", this.motionX)
+                        if (Info.DEBUG_MOVEMENT) System.out.println("[TC-MOTION] pre  mX=" + String.format("%.5f", this.motionX)
                             + " mZ=" + String.format("%.5f", this.motionZ)
                             + " posX=" + String.format("%.3f", this.posX)
                             + " posY=" + String.format("%.3f", this.posY)
@@ -818,14 +818,14 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
                             }
                             // [TC-MOTION-DEBUG] value immediately after the throttle push
                             if (ticksExisted % 20 == 0) {
-                                System.out.println("[TC-MOTION] post mX=" + String.format("%.5f", this.motionX)
+                                if (Info.DEBUG_MOVEMENT) System.out.println("[TC-MOTION] post mX=" + String.format("%.5f", this.motionX)
                                     + " mZ=" + String.format("%.5f", this.motionZ)
                                     + " dir=" + dir);
                             }
                         }
                     } else if (ticksExisted % 20 == 0) {
                         // [TC-MOTION-DEBUG] throttle gate rejected us this tick — say which half failed
-                        System.out.println("[TC-MOTION] GATE-BLOCKED fuel=" + getFuel()
+                        if (Info.DEBUG_MOVEMENT) System.out.println("[TC-MOTION] GATE-BLOCKED fuel=" + getFuel()
                             + " on=" + this.isLocoTurnedOn());
                     }
                 } else if (brakePressed) {

@@ -99,6 +99,11 @@ public class CommonProxy implements IGuiHandler {
 		GameRegistry.registerTileEntity(train.common.tile.TileEntityTraincraftTrack.class, "tileTraincraftTrack");
 		GameRegistry.registerTileEntity(TileoverheadWire.class, "tileOverheadWire");
 		GameRegistry.registerTileEntity(TileoverheadWireDouble.class, "tileOverheadWireDouble");
+		// These two were never registered. Harmless only because their blocks were never
+		// instantiated either; the moment kSignal/signalSpanish became placeable they threw
+		// "is missing a mapping! This is a bug!" on every world save and lost their state.
+		GameRegistry.registerTileEntity(TilekSignal.class, "tileKSignal");
+		GameRegistry.registerTileEntity(TilesignalSpanish.class, "tileSignalSpanish");
 		GameRegistry.registerTileEntity(TileMetroMadridPole.class, "tileMetroMadridPole");
 		GameRegistry.registerTileEntity(TileMFPBWigWag.class, "tileMFPBWigWag");
 		GameRegistry.registerTileEntity(TileEmbeddedStopper.class, "tileEmbeddedStopper");
