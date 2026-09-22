@@ -7,6 +7,15 @@
 > things wrong, and potentially damage saves. **Back up any world first, or better, use a
 > throwaway test world.**
 
+## Download
+
+**Latest:** [v4.4.1-1.12.2-alpha2](https://github.com/crunkazcanbe/traincraft-1.12.2-port/releases/latest)
+— see [CHANGELOG.md](CHANGELOG.md) for what changed.
+
+Requires **Minecraft 1.12.2** with Forge or Cleanroom. Still an alpha: expect rough edges, and
+please report anything broken via Issues.
+
+
 ## What this is
 
 The original Traincraft targets older Minecraft versions. This is an in-progress effort to get
