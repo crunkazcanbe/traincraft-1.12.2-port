@@ -1,7 +1,13 @@
 # Changelog
 
 All notable changes to this port. Versions match the upstream Traincraft version plus a
-port-alpha suffix.
+port suffix (`-alphaN` for the early test builds).
+
+## v4.4.1-1.12.2
+
+First non-alpha release. **Same code as alpha2**: it has been played and tested since then
+(driving, fuel, coupling, hauling cargo, tracks, signals), so the "experimental" label is gone.
+The README now has a short "Driving a locomotive" guide and an up-to-date known-issues list.
 
 ## v4.4.1-1.12.2-alpha2
 

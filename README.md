@@ -1,43 +1,45 @@
-# Traincraft 1.12.2 — Unofficial Experimental Port
+# Traincraft 1.12.2 — Unofficial Port
 
-> ⚠️ **EXTREMELY EXPERIMENTAL. MAJOR BUGS. DO NOT USE THIS IN A WORLD YOU CARE ABOUT.** ⚠️
->
-> This is a work-in-progress, unofficial port of [Traincraft](https://github.com/Traincraft/Traincraft)
-> to **Minecraft 1.12.2** (Forge / Cleanroom). It is nowhere near stable — it can crash, render
-> things wrong, and potentially damage saves. **Back up any world first, or better, use a
-> throwaway test world.**
+An unofficial port of [Traincraft](https://github.com/Traincraft/Traincraft) to **Minecraft 1.12.2**
+(Forge / Cleanroom). **It's playable:** trains place, ride, drive, couple and haul cargo, tracks
+and signals render, and it runs in a large 1.12.2 modpack. As with any mod, back up your world
+before adding it.
 
 ## Download
 
-**Latest:** [v4.4.1-1.12.2-alpha2](https://github.com/crunkazcanbe/traincraft-1.12.2-port/releases/latest)
+**Latest:** [v4.4.1-1.12.2](https://github.com/crunkazcanbe/traincraft-1.12.2-port/releases/latest)
 — see [CHANGELOG.md](CHANGELOG.md) for what changed.
 
-Requires **Minecraft 1.12.2** with Forge or Cleanroom. Still an alpha: expect rough edges, and
-please report anything broken via Issues.
+Requires **Minecraft 1.12.2** with Forge or Cleanroom. Please report anything broken via Issues
+(a screenshot plus the crash report or `latest.log` helps a lot).
 
+## Driving a locomotive
+
+1. Get on, press **R** to open the train screen, and press **Start Engine**.
+2. Diesel locos take fuel in the **first slot** (the Diesel Canister, `tc:diesel`).
+3. Tap **Y** to raise the throttle, **then** hold **W**. W alone does nothing. **S** brakes/reverses.
+
+Other keys: **H** horn, **X** throttle down, **C** idle. To couple, hold a **Stake** and
+right-click one car, then the other.
 
 ## What this is
 
-The original Traincraft targets older Minecraft versions. This is an in-progress effort to get
-it running on **1.12.2** so it can live alongside a modern 1.12.2 modpack. A lot already works —
-trains place, ride, couple, and haul cargo; most models, tracks, and block entities render — but
-plenty is still rough or broken.
+The original Traincraft targets older Minecraft versions. This port gets it running on
+**1.12.2** so it can live alongside a modern 1.12.2 modpack.
 
 This port is a hands-on project done **with the help of Claude (Anthropic's AI)**, worked through
 one bug at a time. The code reflects that: lots of targeted fixes and comments explaining *why*
 things changed.
 
-## Known issues (the "major bugs" part — non-exhaustive)
+## Known issues
 
-- **Bogie locomotives** could render rotated the wrong way on some track directions. A fix
-  restoring the original upstream rotation math was just applied and is **under test**.
-- **Cargo wagons** can sit partially buried in the ground (vertical-offset issue, not yet fixed).
-- Train hitboxes are small and at one end — trains can be **hard to click/break** and may
-  **vanish** behind foliage on occasion.
-- Some locomotive seat positions may still be slightly off.
-- Assorted texture, model, and crash issues remain.
-
-A bug report with a screenshot + the crash report is genuinely helpful.
+- **Train weight has no effect yet.** A small shunter pulls a long train at full speed.
+- **Couplings may not survive a world reload.** Only the "is linked" flag is saved, not which
+  car is on each end.
+- **Ride height on slopes** is a little low, and a train that stops on a slope may not restart.
+- Train hitboxes are small and sit at one end, so trains can be **hard to click or break**.
+- Not ported yet from 1.7.10: 40 ft / 53 ft shipping containers (they show a "work in progress"
+  tooltip), destination signs, and ATO/MTC automation.
 
 ## Building
 
