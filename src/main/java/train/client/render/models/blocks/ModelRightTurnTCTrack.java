@@ -17,6 +17,13 @@ public class ModelRightTurnTCTrack extends ModelBase {
 	private static IModelCustom modelLargeRightTurn = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_big.obj"));
 	private static IModelCustom modelVeryLargeRightTurn = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_very_big.obj"));;
 
+	// GitHub issue #1: these four turns had no model and borrowed the very-large one. Offsets from the 1.7.10 CE
+	// ModelRightTurnTCTrack; left = right minus (size-1) on both axes, the same rule our existing sizes follow.
+	private static IModelCustom model_super_large = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_super_big.obj"));
+	private static IModelCustom model_29x = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_29x.obj"));
+	private static IModelCustom model_32x = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_32x.obj"));
+	private static IModelCustom model_1x = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_1x.obj"));
+
 	private static int GLID=-1;
 
 	public ModelRightTurnTCTrack() {
@@ -54,6 +61,22 @@ public class ModelRightTurnTCTrack extends ModelBase {
 		} else if (type.equals("very_large")){
 			GL11.glTranslatef(8.5f, 0.0f, 9.54f);
 			this.renderVeryLarge();
+		}
+		else if (type.equals("super_large")) {
+			GL11.glTranslatef(14.5f, 0.0f, 15.5f);
+			model_super_large.renderAll();
+		}
+		else if (type.equals("29x")) {
+			GL11.glTranslatef(27.5f, 0.0f, 28.5f);
+			model_29x.renderAll();
+		}
+		else if (type.equals("32x")) {
+			GL11.glTranslatef(30.5f, 0.0f, 31.5f);
+			model_32x.renderAll();
+		}
+		else if (type.equals("1x")) {
+			GL11.glTranslatef(-0.5f, 0.0f, 0.5f);
+			model_1x.renderAll();
 		}
 	}
 }

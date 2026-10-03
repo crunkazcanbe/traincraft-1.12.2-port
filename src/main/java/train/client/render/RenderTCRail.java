@@ -292,7 +292,8 @@ public class RenderTCRail extends TileEntitySpecialRenderer {
 			modelCE.renderFacing(facing, n, railTile, x, y, z);
 			return;
 		}
-		String size = n.contains("SUPER_LARGE") || n.contains("VERY_LARGE") || n.contains("29X29") || n.contains("32X32") ? "very_large"
+		String size = n.contains("SUPER_LARGE") ? "super_large" : n.contains("29X29") ? "29x" : n.contains("32X32") ? "32x"
+				: n.contains("TURN_1X1") ? "1x" : n.contains("VERY_LARGE") ? "very_large"
 				: n.contains("LARGE") ? "large" : "medium";
 		boolean left = n.contains("LEFT");
 		if (n.contains("CROSSING")) {
@@ -306,7 +307,7 @@ public class RenderTCRail extends TileEntitySpecialRenderer {
 			if (left) modelLeftSwitchTurn.render("medium_parallel", railTile, x, y, z);
 			else modelRightSwitchTurn.render("medium_parallel", railTile, x, y, z);
 		} else if (n.contains("SWITCH")) {
-			String sw = size.equals("medium") ? "medium" : "large_90";
+			String sw = size.equals("medium") ? "medium" : "large_90";   // (super_large/29x/32x/1x are turns only)
 			if (left) modelLeftSwitchTurn.render(sw, railTile, x, y, z);
 			else modelRightSwitchTurn.render(sw, railTile, x, y, z);
 		} else if (n.contains("TURN") || n.contains("CURVE")) {

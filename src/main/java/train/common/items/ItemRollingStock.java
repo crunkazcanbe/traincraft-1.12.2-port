@@ -212,6 +212,24 @@ public class ItemRollingStock extends ItemMinecart {
 		}
 	}
 
+	/** The track's direction the way 1.7.10 stored it in metadata: 0/2 = runs north-south, 1/3 = runs east-west. */
+	private int trackMeta(World world, int x, int y, int z) {
+		net.minecraft.tileentity.TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+		if (te instanceof train.common.tile.TileTCRailGag) {
+			train.common.tile.TileTCRailGag gag = (train.common.tile.TileTCRailGag) te;
+			te = world.getTileEntity(new BlockPos(gag.originX, gag.originY, gag.originZ));
+		}
+		if (te instanceof train.common.tile.TileTCRail) return ((train.common.tile.TileTCRail) te).getFacing() & 3;
+		IBlockState st = world.getBlockState(new BlockPos(x, y, z));
+		if (st.getBlock() instanceof net.minecraft.block.BlockRailBase) {
+			net.minecraft.block.BlockRailBase rail = (net.minecraft.block.BlockRailBase) st.getBlock();
+			net.minecraft.block.BlockRailBase.EnumRailDirection d = rail.getRailDirection(world, new BlockPos(x, y, z), st, null);
+			return d == net.minecraft.block.BlockRailBase.EnumRailDirection.EAST_WEST || d == net.minecraft.block.BlockRailBase.EnumRailDirection.ASCENDING_EAST
+					|| d == net.minecraft.block.BlockRailBase.EnumRailDirection.ASCENDING_WEST ? 1 : 0;
+		}
+		return st.getBlock().getMetaFromState(st);
+	}
+
 	private Block getBlock(World world, int x, int y, int z) {
 		return world.getBlockState(new BlockPos(x, y, z)).getBlock();
 	}
@@ -244,10 +262,20 @@ public class ItemRollingStock extends ItemMinecart {
 				}
 
 				int dir = 0;
-				IBlockState blockState = world.getBlockState(new BlockPos(i, j, k));
-				int meta = blockState.getBlock().getMetaFromState(blockState);
-				if (player != null)
+				// GitHub issue #2: on 1.12 the rail block's metadata is always 0 (the direction lives on the tile), so every
+				// track looked north-south here and trains spawned turned around / sideways. Read the real direction.
+				int meta = trackMeta(world, i, j, k);
+				if (player != null) {
 					dir = MathHelper.floor((player.rotationYaw * 4F) / 360F + 0.5D) & 3;
+					// like 1.7.10: only place when the player faces ALONG the track (no diagonal / sideways spawns)
+					float off = Math.abs(MathHelper.wrapDegrees(player.rotationYaw - dir * 90F));
+					boolean trackAlongZ = meta == 0 || meta == 2, playerAlongZ = dir == 0 || dir == 2;
+					if (trackAlongZ != playerAlongZ || off > 35F) {
+						player.sendMessage(new TextComponentString("Face along the track to place this"));
+						rollingStock.setDead();
+						return rollingStock;
+					}
+				}
 
 				if (dir == 2) {
 					rollingStock.rotationYaw = 0;

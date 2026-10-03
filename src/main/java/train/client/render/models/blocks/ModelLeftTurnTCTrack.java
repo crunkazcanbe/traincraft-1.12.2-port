@@ -16,6 +16,10 @@ public class ModelLeftTurnTCTrack extends ModelBase {
 	private static IModelCustom modelMediumLeftTurn= AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_medium.obj"));
 	private static IModelCustom modelLargeLeftTurn = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_big.obj"));
 	private static IModelCustom modelVeryLargeLeftTurn = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_very_big.obj"));
+	private static IModelCustom model_super_large = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_super_big.obj"));
+	private static IModelCustom model_29x = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_29x.obj"));
+	private static IModelCustom model_32x = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_32x.obj"));
+	private static IModelCustom model_1x = AdvancedModelLoader.loadModel(new ResourceLocation(Info.modelPrefix + "track_curve_1x.obj"));
 
 	public ModelLeftTurnTCTrack() {
 	}
@@ -51,6 +55,22 @@ public class ModelLeftTurnTCTrack extends ModelBase {
 		else if(type.equals("very_large")){
 			GL11.glTranslatef(-0.5f, 0.0f, 0.535f);
 			this.renderVeryLarge();}
+		else if (type.equals("super_large")) {
+			GL11.glTranslatef(-0.5f, 0.0f, 0.5f);
+			model_super_large.renderAll();
+		}
+		else if (type.equals("29x")) {
+			GL11.glTranslatef(-0.5f, 0.0f, 0.5f);
+			model_29x.renderAll();
+		}
+		else if (type.equals("32x")) {
+			GL11.glTranslatef(-0.5f, 0.0f, 0.5f);
+			model_32x.renderAll();
+		}
+		else if (type.equals("1x")) {
+			GL11.glTranslatef(-0.5f, 0.0f, 0.5f);
+			model_1x.renderAll();
+		}
 	}
 
 }

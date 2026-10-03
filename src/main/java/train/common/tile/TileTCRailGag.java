@@ -50,6 +50,13 @@ public class TileTCRailGag extends TileEntity {
 		return nbt;
 	}
 
+	/** Chunk-load sync (GitHub issue #3): without this the client got these blocks with no origin/type/height, so
+	 *  its idea of the track's hitbox differed from the server's on long tracks. */
+	@Override
+	public NBTTagCompound getUpdateTag() {
+		return this.writeToNBT(new NBTTagCompound());
+	}
+
 	@Override
 	public net.minecraft.network.play.server.SPacketUpdateTileEntity getUpdatePacket() {
 

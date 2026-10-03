@@ -40,7 +40,6 @@ classes
 runserver
 buildtotest.bat
 
-src/main/java/train/common/api/TrainsOnClick.java
 
 # Local tool artifacts
 .recall/
