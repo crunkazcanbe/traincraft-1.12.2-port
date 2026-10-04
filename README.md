@@ -7,11 +7,43 @@ before adding it.
 
 ## Download
 
-**Latest:** [v4.4.1-1.12.2](https://github.com/crunkazcanbe/traincraft-1.12.2-port/releases/latest)
+**Latest:** [v4.4.3-1.12.2](https://github.com/crunkazcanbe/traincraft-1.12.2-port/releases/latest)
 — see [CHANGELOG.md](CHANGELOG.md) for what changed.
 
 Requires **Minecraft 1.12.2** with Forge or Cleanroom. Please report anything broken via Issues
 (a screenshot plus the crash report or `latest.log` helps a lot).
+
+## Per-dimension train rules (new in v4.4.3)
+
+`config/traincraft.cfg` now has a **`dimensions`** section. For each kind of locomotive you list dimension IDs
+(0 = Overworld, -1 = Nether, 1 = End, modded dimensions use their own IDs):
+
+```
+dimensions {
+    I:SteamDims <
+        0
+        1
+     >
+    B:SteamDimsWhitelist=false
+    I:DieselDims <
+        0
+        -1
+        1
+     >
+    B:DieselDimsWhitelist=false
+    I:ElectricDims <
+        0
+        -1
+     >
+    B:ElectricDimsWhitelist=false
+}
+```
+
+- `*Whitelist=false` (default): the list is a **blacklist**, so that type of train will not start in those dimensions.
+- `*Whitelist=true`: the list is a **whitelist**, so that type of train ONLY works in those dimensions.
+- Empty lists (the default) mean every train works everywhere, same as before.
+
+A locomotive in a dimension it isn't allowed in won't start its engine, and the driver sees a message saying so.
 
 ## Driving a locomotive
 

@@ -680,6 +680,17 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
 
     @Override
     public void onUpdate() {
+        // Config "dimensions": this type of locomotive may be barred from this dimension. Keep the engine off and tell the driver why.
+        if (!world.isRemote && this.isLocoTurnedOn && !dimensionAllowsEngine()) {
+            this.isLocoTurnedOn = false;
+            if (this.ticksExisted - this.dimNoticeTick > 100 || this.dimNoticeTick == 0) {
+                this.dimNoticeTick = Math.max(1, this.ticksExisted);
+                for (net.minecraft.entity.Entity p : this.getPassengers())
+                    if (p instanceof net.minecraft.entity.player.EntityPlayer)
+                        ((net.minecraft.entity.player.EntityPlayer) p).sendStatusMessage(new net.minecraft.util.text.TextComponentString(
+                                "\u00a7c" + engineKind() + " locomotives don't work in this dimension."), true);
+            }
+        }
         // ponytail: EntityRollingStock.onUpdate (which re-seats riders) is skipped by early
         // returns further down this method, so mounted players were never re-seated (dropped on
         // the ground). Re-seat here at the guaranteed entry point, every tick, both sides.
@@ -1335,6 +1346,25 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
     }
     public void setLocoTurnedOnFromPacket(boolean set) {
         isLocoTurnedOn = set;
+    }
+
+    private int dimNoticeTick;
+
+    /** steam / diesel / electric, for the dimension rules and messages */
+    public String engineKind() {
+        if (this instanceof SteamTrain) return "Steam";
+        if (this instanceof DieselTrain) return "Diesel";
+        if (this instanceof ElectricTrain) return "Electric";
+        return "These";
+    }
+
+    /** checks ConfigHandler's per-type dimension blacklist/whitelist */
+    public boolean dimensionAllowsEngine() {
+        int dim = world.provider.getDimension();
+        if (this instanceof SteamTrain) return ConfigHandler.dimAllowed(ConfigHandler.STEAM_DIMS, ConfigHandler.STEAM_DIMS_WHITELIST, dim);
+        if (this instanceof DieselTrain) return ConfigHandler.dimAllowed(ConfigHandler.DIESEL_DIMS, ConfigHandler.DIESEL_DIMS_WHITELIST, dim);
+        if (this instanceof ElectricTrain) return ConfigHandler.dimAllowed(ConfigHandler.ELECTRIC_DIMS, ConfigHandler.ELECTRIC_DIMS_WHITELIST, dim);
+        return true;
     }
 
     public boolean isLocoTurnedOn() {

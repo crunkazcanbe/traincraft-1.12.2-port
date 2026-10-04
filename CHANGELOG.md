@@ -3,6 +3,19 @@
 All notable changes to this port. Versions match the upstream Traincraft version plus a
 port suffix (`-alphaN` for the early test builds).
 
+## v4.4.3-1.12.2
+
+### Added
+- **Per-train-type dimension rules** (issue #6): new `dimensions` config section with `SteamDims`, `DieselDims`,
+  `ElectricDims` and a `…Whitelist` true/false for each. Default = blacklist (that type won't start in the listed
+  dimension IDs); whitelist = that type only works there. Empty lists keep the old behaviour. A locomotive that isn't
+  allowed in its dimension keeps its engine off and tells the driver why. See the README for an example.
+
+## v4.4.2-1.12.2
+
+Fixes for the four reported bugs (#1–#4): curve track models, locomotive placement direction, long-straight hitbox,
+track-stake double click.
+
 ## v4.4.1-1.12.2
 
 First non-alpha release. **Same code as alpha2**: it has been played and tested since then

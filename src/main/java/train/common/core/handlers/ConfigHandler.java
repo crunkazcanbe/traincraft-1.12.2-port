@@ -42,8 +42,19 @@ public class ConfigHandler {
 	public static boolean ENABLE_WAGON_REMOVAL_NOTICES;
 	public static boolean ENABLE_LOGGING;
 	public static boolean ALLOW_ATO_ON_STEAMERS;
+	/** per-train-type dimension lists: blacklist by default, whitelist when the *_WHITELIST flag is true */
+	public static int[] STEAM_DIMS = {}, DIESEL_DIMS = {}, ELECTRIC_DIMS = {};
+	public static boolean STEAM_DIMS_WHITELIST, DIESEL_DIMS_WHITELIST, ELECTRIC_DIMS_WHITELIST;
+	public static final String CATEGORY_DIMENSIONS = "dimensions";
 
 	public static int UPDATE_FREQUENCY=3;
+
+	/** can this kind of locomotive run in this dimension? */
+	public static boolean dimAllowed(int[] dims, boolean whitelist, int dim) {
+		boolean listed = false;
+		for (int d : dims) if (d == dim) { listed = true; break; }
+		return whitelist ? listed : !listed;
+	}
 
 	public static void changeFirstLoad(){
 		Configuration cf = new Configuration(new File(Traincraft.configDirectory, Info.modName + ".cfg"));
@@ -57,6 +68,17 @@ public class ConfigHandler {
 
 		try {
 			cf.load();
+			/* Dimensions: where each kind of locomotive can run */
+			cf.addCustomCategoryComment(CATEGORY_DIMENSIONS, "Which dimensions each type of locomotive works in. By default the list is a BLACKLIST "
+					+ "(trains of that type will not start in these dimension IDs). Set the matching *_WHITELIST option to true to make the list a "
+					+ "whitelist instead (that type ONLY works in the listed dimensions). Example: overworld 0, nether -1, end 1.");
+			STEAM_DIMS = cf.get(CATEGORY_DIMENSIONS, "SteamDims", new int[0], "Dimension IDs for steam locomotives.").getIntList();
+			STEAM_DIMS_WHITELIST = cf.get(CATEGORY_DIMENSIONS, "SteamDimsWhitelist", false, "true = SteamDims is a whitelist (steam ONLY works there).").getBoolean(false);
+			DIESEL_DIMS = cf.get(CATEGORY_DIMENSIONS, "DieselDims", new int[0], "Dimension IDs for diesel locomotives.").getIntList();
+			DIESEL_DIMS_WHITELIST = cf.get(CATEGORY_DIMENSIONS, "DieselDimsWhitelist", false, "true = DieselDims is a whitelist (diesel ONLY works there).").getBoolean(false);
+			ELECTRIC_DIMS = cf.get(CATEGORY_DIMENSIONS, "ElectricDims", new int[0], "Dimension IDs for electric locomotives.").getIntList();
+			ELECTRIC_DIMS_WHITELIST = cf.get(CATEGORY_DIMENSIONS, "ElectricDimsWhitelist", false, "true = ElectricDims is a whitelist (electric ONLY works there).").getBoolean(false);
+
 			/* General */
 			SOUNDS = cf.get(CATEGORY_GENERAL, "ENABLE_SOUNDS", true).getBoolean(true);
 			FLICKERING = cf.get(CATEGORY_GENERAL, "DISABLE_FLICKERING", true,"forces trains and rollingstock to render twice, this fixes some bugs with texture flickering.").getBoolean(true);
