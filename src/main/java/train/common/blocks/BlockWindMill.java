@@ -96,6 +96,13 @@ public class BlockWindMill extends Block {
 		else facing = 1;
 
 		world.setBlockState(pos, state.withProperty(DATA, facing | (i1 << 2)), 2);
+		TileEntity te = world.getTileEntity(pos);                     // the renderer turns the windmill by its tile's facing (issue #7)
+		if (te instanceof TileWindMill) {
+			((TileWindMill) te).setFacing(facing);
+			te.markDirty();
+			IBlockState now = world.getBlockState(pos);
+			world.notifyBlockUpdate(pos, now, now, 3);
+		}
 	}
 
 	/**

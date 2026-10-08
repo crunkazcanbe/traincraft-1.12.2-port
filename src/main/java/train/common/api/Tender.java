@@ -219,17 +219,17 @@ public abstract class Tender extends Freight implements IFluidHandler {
 	/*IInventory implements*/
 	@Override
 	public ItemStack getStackInSlot(int i) {
-		return tenderItems[i];
+		return tenderItems[i] == null ? ItemStack.EMPTY : tenderItems[i];
 	}
 
 	public ItemStack getStackInSlotOnClosing(int par1) {
 		if (this.tenderItems[par1] != null) {
 			ItemStack var2 = this.tenderItems[par1];
 			this.tenderItems[par1] = null;
-			return var2;
+			return var2 == null ? ItemStack.EMPTY : var2;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -239,21 +239,22 @@ public abstract class Tender extends Freight implements IFluidHandler {
 			if (tenderItems[i].getCount() <= j) {
 				ItemStack itemstack = tenderItems[i];
 				tenderItems[i] = null;
-				return itemstack;
+				return itemstack == null ? ItemStack.EMPTY : itemstack;
 			}
 			ItemStack itemstack1 = tenderItems[i].splitStack(j);
 			if (tenderItems[i].isEmpty()) {
 				tenderItems[i] = null;
 			}
-			return itemstack1;
+			return itemstack1 == null ? ItemStack.EMPTY : itemstack1;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		if (itemstack != null && itemstack.isEmpty()) itemstack = null;
 		tenderItems[i] = itemstack;
 		if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
 			itemstack.setCount(getInventoryStackLimit());

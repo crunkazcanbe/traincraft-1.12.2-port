@@ -279,17 +279,17 @@ public abstract class LiquidTank extends EntityRollingStock implements IFluidHan
 
 	@Override
 	public ItemStack getStackInSlot(int i) {
-		return cargoItems[i];
+		return cargoItems[i] == null ? ItemStack.EMPTY : cargoItems[i];
 	}
 
 	public ItemStack getStackInSlotOnClosing(int par1) {
 		if (this.cargoItems[par1] != null) {
 			ItemStack var2 = this.cargoItems[par1];
 			this.cargoItems[par1] = null;
-			return var2;
+			return var2 == null ? ItemStack.EMPTY : var2;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -299,16 +299,16 @@ public abstract class LiquidTank extends EntityRollingStock implements IFluidHan
 			if (cargoItems[i].getCount() <= j) {
 				ItemStack itemstack = cargoItems[i];
 				cargoItems[i] = null;
-				return itemstack;
+				return itemstack == null ? ItemStack.EMPTY : itemstack;
 			}
 			ItemStack itemstack1 = cargoItems[i].splitStack(j);
 			if (cargoItems[i].isEmpty()) {
 				cargoItems[i] = null;
 			}
-			return itemstack1;
+			return itemstack1 == null ? ItemStack.EMPTY : itemstack1;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -317,13 +317,14 @@ public abstract class LiquidTank extends EntityRollingStock implements IFluidHan
 		if (cargoItems[i] != null) {
 			ItemStack s = cargoItems[i];
 			cargoItems[i] = null;
-			return s;
+			return s == null ? ItemStack.EMPTY : s;
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		if (itemstack != null && itemstack.isEmpty()) itemstack = null;
 		cargoItems[i] = itemstack;
 		if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
 			itemstack.setCount(getInventoryStackLimit());

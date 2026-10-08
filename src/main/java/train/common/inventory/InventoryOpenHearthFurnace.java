@@ -20,23 +20,24 @@ public class InventoryOpenHearthFurnace implements IInventory{
 
 	@Override
 	public ItemStack getStackInSlot(int slotID) {
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public ItemStack decrStackSize(int p_70298_1_, int p_70298_2_) {
 		// TODO Auto-generated method stub
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public ItemStack removeStackFromSlot(int index) {
 		// TODO Auto-generated method stub
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public void setInventorySlotContents(int p_70299_1_, ItemStack p_70299_2_) {
+		if (p_70299_2_ != null && p_70299_2_.isEmpty()) p_70299_2_ = null;
 		// TODO Auto-generated method stub
 
 	}

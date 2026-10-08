@@ -3,6 +3,24 @@
 All notable changes to this port. Versions match the upstream Traincraft version plus a
 port suffix (`-alphaN` for the early test builds).
 
+## v4.4.4-1.12.2
+
+### Fixed
+- **Steam tender GUIs crashed the game** (issue #8) and **"Ticking player" crash** (issue #12): several inventories
+  (tenders, tank cars, work carts, the track builder, zeppelins, the rotative digger, the open-hearth furnace)
+  handed Minecraft `null` for an empty slot, which 1.12.2 can't take. They now give `ItemStack.EMPTY` at the
+  inventory boundary everywhere. Tested: a placed Small Tender's GUI opens and ticks with no errors.
+- **Steam locomotives couldn't be filled with water from their GUI** (issue #9): the water slot now uses Forge's
+  own container handling, so a water bucket (or any mod's water container) empties into the boiler and the empty
+  container comes back in a cargo slot. Tested: a bucket in the slot -> 1000 mB in the boiler, empty bucket returned.
+- **Blocks lost their data on world reload** (issue #5): buffer stops all faced west and lanterns turned black.
+  37 tile entities saved their data but never sent it to the client when a chunk loads; they all do now (facings,
+  colours, signal / switch-stand states, speed signs, containers...). Tested: buffers and lanterns keep their facing
+  and colour after quitting and reloading.
+- **Windmill and Water Wheel weren't directional** (issue #7): placement now sets the way they face. The water wheel
+  still turns to face water beside it, but keeps the way you placed it when there's none (it used to reset).
+  The water wheel also stopped re-sending itself to every player every tick (now only when it changes / once a second).
+
 ## v4.4.3-1.12.2
 
 ### Added

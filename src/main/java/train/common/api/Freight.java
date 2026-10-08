@@ -60,7 +60,7 @@ public abstract class Freight extends EntityRollingStock implements IInventory {
 		if (cargoItems == null || i < 0 || i >= cargoItems.length || cargoItems[i] == null) {
 			return ItemStack.EMPTY;
 		}
-		return cargoItems[i];
+		return cargoItems[i] == null ? ItemStack.EMPTY : cargoItems[i];
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public abstract class Freight extends EntityRollingStock implements IInventory {
 		if (this.cargoItems[par1] != null) {
 			ItemStack var2 = this.cargoItems[par1];
 			this.cargoItems[par1] = null;
-			return var2;
+			return var2 == null ? ItemStack.EMPTY : var2;
 		}
 		else {
 			return ItemStack.EMPTY;
@@ -121,13 +121,13 @@ public abstract class Freight extends EntityRollingStock implements IInventory {
 			if (cargoItems[i].getCount() <= j) {
 				ItemStack itemstack = cargoItems[i];
 				cargoItems[i] = null;
-				return itemstack;
+				return itemstack == null ? ItemStack.EMPTY : itemstack;
 			}
 			ItemStack itemstack1 = cargoItems[i].splitStack(j);
 			if (cargoItems[i].isEmpty()) {
 				cargoItems[i] = null;
 			}
-			return itemstack1;
+			return itemstack1 == null ? ItemStack.EMPTY : itemstack1;
 		}
 		else {
 			return ItemStack.EMPTY;
@@ -136,6 +136,7 @@ public abstract class Freight extends EntityRollingStock implements IInventory {
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		if (itemstack != null && itemstack.isEmpty()) itemstack = null;
 		cargoItems[i] = itemstack;
 		if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
 			itemstack.setCount(getInventoryStackLimit());

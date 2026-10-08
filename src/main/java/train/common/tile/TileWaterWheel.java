@@ -15,6 +15,8 @@ import train.common.core.util.Energy;
 public class TileWaterWheel extends Energy implements IEnergyProvider, ITickable {
 
 	public int facingMeta;
+	/** the way the player placed it: the wheel faces this way whenever no water is beside it (issue #7) */
+	public int placedFacing;
 
 	public TileWaterWheel() {
 		super(0, "WaterWheel", 80, 80);
@@ -26,12 +28,14 @@ public class TileWaterWheel extends Energy implements IEnergyProvider, ITickable
 	public void readFromNBT(NBTTagCompound nbtTag, boolean forSyncing){
 		super.readFromNBT(nbtTag, forSyncing);
 		facingMeta = nbtTag.getByte("Orientation");
+		placedFacing = nbtTag.hasKey("Placed") ? nbtTag.getByte("Placed") : Math.max(0, facingMeta);
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbtTag, boolean forSyncing){
 		super.writeToNBT(nbtTag, forSyncing);
 		nbtTag.setByte("Orientation", (byte) facingMeta);
+		nbtTag.setByte("Placed", (byte) placedFacing);
 		return nbtTag;
 	}
 
@@ -43,6 +47,7 @@ public class TileWaterWheel extends Energy implements IEnergyProvider, ITickable
 	@Override
 	public void update() {
 		if (!world.isRemote) {
+			int before = facingMeta;
 			int x = pos.getX();
 			int y = pos.getY();
 			int z = pos.getZ();
@@ -77,7 +82,7 @@ public class TileWaterWheel extends Energy implements IEnergyProvider, ITickable
 					&& blockBottom.getMaterial(world.getBlockState(new BlockPos(x,y-1,z))) != Material.LAVA) {
 				this.energy.receiveEnergy(5, false);
 			} else {
-				setWaterDir(-1);
+				setWaterDir(placedFacing);
 			}
 
 			if (this.energy.getEnergyStored() > 0) {
@@ -85,7 +90,7 @@ public class TileWaterWheel extends Energy implements IEnergyProvider, ITickable
 			}
 
 			this.markDirty();
-			this.syncTileEntity();
+			if (facingMeta != before || world.getTotalWorldTime() % 20 == 0) this.syncTileEntity();   // not every tick
 		}
 	}
 

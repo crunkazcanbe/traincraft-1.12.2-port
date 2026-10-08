@@ -48,4 +48,9 @@ public class TileAmericanStopper extends TileEntity {
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         this.readFromNBT(pkt.getNbtCompound());
     }
+
+	// 1.12 sends a block's data to the client through these (chunk load / block update); without them the client
+	// forgets facings, colours, settings after a reload (GitHub issue #5)
+	@Override
+	public net.minecraft.nbt.NBTTagCompound getUpdateTag() { return writeToNBT(new net.minecraft.nbt.NBTTagCompound()); }
 }

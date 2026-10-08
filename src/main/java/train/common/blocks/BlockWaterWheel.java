@@ -61,6 +61,14 @@ public class BlockWaterWheel extends Block {
 		++l; l %= 4;
 		int meta = (l == 0 ? 2 : l == 1 ? 3 : l == 2 ? 0 : 1) | i1 << 2;
 		world.setBlockState(pos, this.getStateFromMeta(meta), 2);
+		TileEntity te = world.getTileEntity(pos);                     // the renderer turns the wheel by its tile's facing (issue #7)
+		if (te instanceof TileWaterWheel) {
+			((TileWaterWheel) te).facingMeta = meta & 3;
+			((TileWaterWheel) te).placedFacing = meta & 3;
+			te.markDirty();
+			IBlockState now = world.getBlockState(pos);
+			world.notifyBlockUpdate(pos, now, now, 3);
+		}
 	}
 
 	@Override

@@ -218,7 +218,7 @@ public abstract class AbstractWorkCart extends EntityRollingStock implements IIn
 
 	@Override
 	public ItemStack getStackInSlot(int i) {
-		return this.furnaceItemStacks[i];
+		return this.furnaceItemStacks[i] == null ? ItemStack.EMPTY : this.furnaceItemStacks[i];
 	}
 
 	@Override
@@ -233,10 +233,10 @@ public abstract class AbstractWorkCart extends EntityRollingStock implements IIn
 		if (this.furnaceItemStacks[par1] != null) {
 			ItemStack var2 = this.furnaceItemStacks[par1];
 			this.furnaceItemStacks[par1] = null;
-			return var2;
+			return var2 == null ? ItemStack.EMPTY : var2;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -247,18 +247,18 @@ public abstract class AbstractWorkCart extends EntityRollingStock implements IIn
 			if (this.furnaceItemStacks[par1].getCount() <= par2) {
 				var3 = this.furnaceItemStacks[par1];
 				this.furnaceItemStacks[par1] = null;
-				return var3;
+				return var3 == null ? ItemStack.EMPTY : var3;
 			}
 			else {
 				var3 = this.furnaceItemStacks[par1].splitStack(par2);
 				if (this.furnaceItemStacks[par1].isEmpty()) {
 					this.furnaceItemStacks[par1] = null;
 				}
-				return var3;
+				return var3 == null ? ItemStack.EMPTY : var3;
 			}
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -267,13 +267,14 @@ public abstract class AbstractWorkCart extends EntityRollingStock implements IIn
 		if (furnaceItemStacks[index] != null) {
 			ItemStack stack = furnaceItemStacks[index];
 			furnaceItemStacks[index] = null;
-			return stack;
+			return stack == null ? ItemStack.EMPTY : stack;
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public void setInventorySlotContents(int par1, ItemStack par2ItemStack) {
+		if (par2ItemStack != null && par2ItemStack.isEmpty()) par2ItemStack = null;
 		this.furnaceItemStacks[par1] = par2ItemStack;
 		if (par2ItemStack != null && par2ItemStack.getCount() > this.getInventoryStackLimit()) {
 			par2ItemStack.setCount(this.getInventoryStackLimit());

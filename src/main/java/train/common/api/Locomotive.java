@@ -1505,7 +1505,7 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
         if (locoInvent == null || i < 0 || i >= locoInvent.length || locoInvent[i] == null) {
             return ItemStack.EMPTY;
         }
-        return locoInvent[i];
+        return locoInvent[i] == null ? ItemStack.EMPTY : locoInvent[i];
     }
 
     @Override
@@ -1542,10 +1542,10 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
         if (this.locoInvent[par1] != null) {
             ItemStack var2 = this.locoInvent[par1];
             this.locoInvent[par1] = null;
-            return var2;
+            return var2 == null ? ItemStack.EMPTY : var2;
         }
         else {
-            return null;
+            return ItemStack.EMPTY;
         }
     }
 
@@ -1555,22 +1555,23 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
             if (locoInvent[i].getCount() <= j) {
                 ItemStack itemstack = locoInvent[i];
                 locoInvent[i] = null;
-                return itemstack;
+                return itemstack == null ? ItemStack.EMPTY : itemstack;
             }
             ItemStack itemstack1 = locoInvent[i].splitStack(j);
             if (locoInvent[i].getCount() == 0) {
                 locoInvent[i] = null;
             }
-            return itemstack1;
+            return itemstack1 == null ? ItemStack.EMPTY : itemstack1;
 
         }
         else {
-            return null;
+            return ItemStack.EMPTY;
         }
     }
 
     @Override
     public void setInventorySlotContents(int i, ItemStack itemstack) {
+		if (itemstack != null && itemstack.isEmpty()) itemstack = null;
         locoInvent[i] = itemstack;
         if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
             itemstack.setCount(getInventoryStackLimit());

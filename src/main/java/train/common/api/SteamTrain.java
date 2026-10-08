@@ -157,18 +157,23 @@ public abstract class SteamTrain extends Locomotive {
 		}
 	}
 
+	/**
+	 * The water slot in the loco's GUI: empty a bucket (or any mod's fluid container) of water into the boiler and give
+	 * the empty container back in a cargo slot. Forge's FluidUtil does the work, so it decrements the slot exactly once
+	 * (GitHub issue #9).
+	 */
 	public void liquidInSlot(ItemStack itemstack, SteamTrain loco) {
-
-		if (world.isRemote)
-			return;
+		if (world.isRemote) return;
 		this.update += 1;
-		if (this.update % 8 == 0 && itemstack != null) {
-			ItemStack result = LiquidManager.getInstance().processContainer(this, 1, theTank, itemstack);
-			if (result != null) {
-				placeInInvent(result, loco);
-				decrStackSize(1, 1);
-			}
-		}
+		if (this.update % 8 != 0 || itemstack == null || itemstack.isEmpty() || theTank == null) return;
+		ItemStack one = itemstack.copy();
+		one.setCount(1);
+		net.minecraftforge.fluids.FluidActionResult r = net.minecraftforge.fluids.FluidUtil.tryEmptyContainer(one, (net.minecraftforge.fluids.capability.IFluidHandler) theTank, Integer.MAX_VALUE, null, true);
+		if (!r.isSuccess()) return;
+		decrStackSize(1, 1);
+		ItemStack empty = r.getResult();
+		if (!empty.isEmpty()) placeInInvent(empty, loco);
+		markDirty();
 	}
 
 	protected void checkInvent(ItemStack locoInvent0, ItemStack locoInvent1, SteamTrain loco) {

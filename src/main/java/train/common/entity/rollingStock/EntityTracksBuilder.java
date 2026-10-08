@@ -294,7 +294,7 @@ public class EntityTracksBuilder extends EntityRollingStock implements IInventor
 
 	@Override
 	public ItemStack getStackInSlot(int i) {
-		return BuilderInvent[i];
+		return BuilderInvent[i] == null ? ItemStack.EMPTY : BuilderInvent[i];
 	}
 
 	@Override
@@ -302,7 +302,7 @@ public class EntityTracksBuilder extends EntityRollingStock implements IInventor
 		if (this.BuilderInvent[par1] != null) {
 			ItemStack var2 = this.BuilderInvent[par1];
 			this.BuilderInvent[par1] = null;
-			return var2;
+			return var2 == null ? ItemStack.EMPTY : var2;
 		}
 		else {
 			return ItemStack.EMPTY;
@@ -315,20 +315,21 @@ public class EntityTracksBuilder extends EntityRollingStock implements IInventor
 			if (BuilderInvent[i].getCount() <= j) {
 				ItemStack itemstack = BuilderInvent[i];
 				BuilderInvent[i] = null;
-				return itemstack;
+				return itemstack == null ? ItemStack.EMPTY : itemstack;
 			}
 			ItemStack itemstack1 = BuilderInvent[i].splitStack(j);
 			if (BuilderInvent[i].isEmpty()) {
 				BuilderInvent[i] = null;
 			}
-			return itemstack1;
+			return itemstack1 == null ? ItemStack.EMPTY : itemstack1;
 		} else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		if (itemstack != null && itemstack.isEmpty()) itemstack = null;
 		BuilderInvent[i] = itemstack;
 		if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
 			itemstack.setCount(getInventoryStackLimit());

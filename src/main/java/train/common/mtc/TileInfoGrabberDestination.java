@@ -227,4 +227,13 @@ public class TileInfoGrabberDestination extends TileEntity implements IPeriphera
         if (node != null) node.remove();
     }
 
+
+	// 1.12 sends a block's data to the client through these (chunk load / block update); without them the client
+	// forgets facings, colours, settings after a reload (GitHub issue #5)
+	@Override
+	public net.minecraft.nbt.NBTTagCompound getUpdateTag() { return writeToNBT(new net.minecraft.nbt.NBTTagCompound()); }
+	@Override
+	public net.minecraft.network.play.server.SPacketUpdateTileEntity getUpdatePacket() { return new net.minecraft.network.play.server.SPacketUpdateTileEntity(pos, 0, getUpdateTag()); }
+	@Override
+	public void onDataPacket(net.minecraft.network.NetworkManager net, net.minecraft.network.play.server.SPacketUpdateTileEntity pkt) { readFromNBT(pkt.getNbtCompound()); }
 }

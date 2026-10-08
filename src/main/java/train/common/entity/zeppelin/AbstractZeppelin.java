@@ -563,7 +563,7 @@ public abstract class AbstractZeppelin extends Entity implements IInventory {
 
 	@Override
 	public ItemStack getStackInSlot(int i) {
-		return zeppInvent[i];
+		return zeppInvent[i] == null ? ItemStack.EMPTY : zeppInvent[i];
 	}
 
 	/**
@@ -573,10 +573,10 @@ public abstract class AbstractZeppelin extends Entity implements IInventory {
 		if (this.zeppInvent[par1] != null) {
 			ItemStack var2 = this.zeppInvent[par1];
 			this.zeppInvent[par1] = null;
-			return var2;
+			return var2 == null ? ItemStack.EMPTY : var2;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -586,16 +586,16 @@ public abstract class AbstractZeppelin extends Entity implements IInventory {
 			if (zeppInvent[i].getCount() <= j) {
 				ItemStack itemstack = zeppInvent[i];
 				zeppInvent[i] = null;
-				return itemstack;
+				return itemstack == null ? ItemStack.EMPTY : itemstack;
 			}
 			ItemStack itemstack1 = zeppInvent[i].splitStack(j);
 			if (zeppInvent[i].isEmpty()) {
 				zeppInvent[i] = null;
 			}
-			return itemstack1;
+			return itemstack1 == null ? ItemStack.EMPTY : itemstack1;
 		}
 		else {
-			return null;
+			return ItemStack.EMPTY;
 		}
 	}
 
@@ -604,13 +604,14 @@ public abstract class AbstractZeppelin extends Entity implements IInventory {
 		if (zeppInvent[i] != null) {
 			ItemStack s = zeppInvent[i];
 			zeppInvent[i] = null;
-			return s;
+			return s == null ? ItemStack.EMPTY : s;
 		}
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override
 	public void setInventorySlotContents(int i, ItemStack itemstack) {
+		if (itemstack != null && itemstack.isEmpty()) itemstack = null;
 		zeppInvent[i] = itemstack;
 		if (itemstack != null && itemstack.getCount() > getInventoryStackLimit()) {
 			itemstack.setCount(getInventoryStackLimit());
