@@ -199,6 +199,7 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
         dataWatcher.addObject(27, castToString(currentMassPulled));
         dataWatcher.addObject(28, castToString(Math.round(currentSpeedSlowDown)));
         dataWatcher.addObject(29, castToString(currentAccelSlowDown));
+        dataWatcher.addObject(33, 0); // parking brake, so the GUI shows the real one (a new loco's brake is on)
         dataWatcher.addObject(30, castToString(currentBrakeSlowDown));
         dataWatcher.addObject(31, castToString(currentFuelConsumptionChange));
         dataWatcher.addObject(15, (float) Math.round((getCustomSpeed() * 3.6f)));
@@ -709,6 +710,8 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
                 + " tick=" + this.ticksExisted);
         }
         this.dbgWasRidden = this.isBeingRidden();
+        if (!world.isRemote) dataWatcher.updateObject(33, parkingBrake ? 1 : 0);
+        else parkingBrake = dataWatcher.getWatchableObjectInt(33) == 1;
         if (trainID.equals("") && !world.isRemote && ticksExisted % 40 == 0) {
             trainID = RandomStringUtils.randomAlphanumeric(5);
             dataWatcher.updateObject(5, trainID);

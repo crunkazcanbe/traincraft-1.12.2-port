@@ -3,6 +3,17 @@
 All notable changes to this port. Versions match the upstream Traincraft version plus a
 port suffix (`-alphaN` for the early test builds).
 
+## v4.4.5-1.12.2
+
+### Fixed
+- **Train GUIs and the driving HUD showed zeros** (reported in issue #14): fuel, water, heat, state, maximum speed,
+  carts / mass pulled and the other train values were only ever kept on the server, so every GUI and HUD read the
+  defaults (a full diesel showed "Fuel: 0 mB" and "Maximum Speed: 0.0"). They're now really synced: a value goes to the
+  players near the train as soon as it changes, plus a full refresh every 2 seconds for anyone who just arrived.
+  Tested: an SD40-2 with 20000 mB of diesel shows Fuel 20000 mB, Maximum Speed 105 km/h and its state, and the HUD's
+  fuel / heat / speed gauges move.
+- **The parking brake shown in the GUI could be the wrong way round**: it now follows the train's real brake.
+
 ## v4.4.4-1.12.2
 
 ### Fixed

@@ -31,6 +31,8 @@ public class PacketHandler {
 		Traincraft.brakeChannel = NetworkRegistry.INSTANCE.newSimpleChannel("brake");
 		Traincraft.lockChannel = NetworkRegistry.INSTANCE.newSimpleChannel("lock");
 		Traincraft.builderChannel = NetworkRegistry.INSTANCE.newSimpleChannel("builder");
+		Traincraft.watchChannel = NetworkRegistry.INSTANCE.newSimpleChannel("tcwatch");
+		Traincraft.watchChannel.registerMessage(train.common.core.network.PacketDataWatch.Handler.class, train.common.core.network.PacketDataWatch.class, 0, Side.CLIENT);
 
 
 

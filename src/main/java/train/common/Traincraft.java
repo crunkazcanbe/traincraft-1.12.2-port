@@ -61,6 +61,8 @@ public class Traincraft {
 
 	/** Network Channel to send packets on */
 	public static SimpleNetworkWrapper modChannel;
+	/** a train's synced values (fuel, water, heat...) to the players watching it */
+	public static SimpleNetworkWrapper watchChannel;
 	public static SimpleNetworkWrapper keyChannel;
 	public static SimpleNetworkWrapper rotationChannel;
 

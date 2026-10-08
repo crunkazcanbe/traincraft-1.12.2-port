@@ -697,6 +697,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 
 	@Override
 	public void onUpdate() {
+		syncWatcher();   // super.onUpdate() below only runs on some paths
 		// ponytail: the vanilla passenger-repositioning in super.onUpdate() is buried deep in this
 		// method and often skipped, so a mounted rider was never re-seated (stuck on the ground far
 		// from the train). Force the re-seat every tick here so riders stick to the train.

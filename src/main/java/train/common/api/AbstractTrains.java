@@ -39,6 +39,16 @@ public abstract class AbstractTrains extends EntityMinecart implements IEntityAd
 
 	/** 1.7.10 → 1.12.2 compat fields */
 	protected final DataWatcherShim dataWatcher = new DataWatcherShim();
+	public DataWatcherShim watcher() { return dataWatcher; }
+	private int watchSyncedAt = -1;
+
+	/** fuel, water, heat... to the players watching: what changed, plus everything every 2 s for new watchers. Once a tick. */
+	protected void syncWatcher() {
+		if (world.isRemote || Traincraft.watchChannel == null || watchSyncedAt == ticksExisted) return;
+		watchSyncedAt = ticksExisted;
+		java.util.Map<Integer, Object> m = ticksExisted % 40 == 0 ? dataWatcher.all() : dataWatcher.takeDirty();
+		if (!m.isEmpty()) Traincraft.watchChannel.sendToAllTracking(new train.common.core.network.PacketDataWatch(getEntityId(), m), this);
+	}
 	protected float yOffset = 0.0f;
 	protected float ySize = 0.0f;
 	protected float entityCollisionReduction = 0.0f;
@@ -333,6 +343,7 @@ public abstract class AbstractTrains extends EntityMinecart implements IEntityAd
 	@Override
 	public void onUpdate() {
 		super.onUpdate();
+		syncWatcher();
 		if(!(this instanceof EntityRollingStock)) {
 			manageChunkLoading();
 		}
