@@ -45,6 +45,11 @@ public class ConfigHandler {
 	/** per-train-type dimension lists: blacklist by default, whitelist when the *_WHITELIST flag is true */
 	public static int[] STEAM_DIMS = {}, DIESEL_DIMS = {}, ELECTRIC_DIMS = {};
 	public static boolean STEAM_DIMS_WHITELIST, DIESEL_DIMS_WHITELIST, ELECTRIC_DIMS_WHITELIST;
+	/** derailments and wrecks (train.common.wreck.Wreck) */
+	public static final String CATEGORY_WRECKS = "derailments";
+	public static boolean WRECK_ENABLED = true, WRECK_BLOCK_DAMAGE = true, WRECK_EXPLOSIONS = true, WRECK_EXPLOSIONS_BREAK_BLOCKS = false,
+			WRECK_FIRE = true, WRECK_CARGO_SPILL = true, WRECK_RIDER_DAMAGE = true, WRECK_TOTALED_KEEPS_CART = false;
+	public static double WRECK_CURVE_LIMIT_G = 1.0, WRECK_WARN_FRACTION = 0.85, WRECK_COLLISION_KMH = 15, WRECK_IMPACT_KMH = 20, WRECK_OFFTRACK_TIP_KMH = 30;
 	public static final String CATEGORY_DIMENSIONS = "dimensions";
 
 	public static int UPDATE_FREQUENCY=3;
@@ -78,6 +83,23 @@ public class ConfigHandler {
 			DIESEL_DIMS_WHITELIST = cf.get(CATEGORY_DIMENSIONS, "DieselDimsWhitelist", false, "true = DieselDims is a whitelist (diesel ONLY works there).").getBoolean(false);
 			ELECTRIC_DIMS = cf.get(CATEGORY_DIMENSIONS, "ElectricDims", new int[0], "Dimension IDs for electric locomotives.").getIntList();
 			ELECTRIC_DIMS_WHITELIST = cf.get(CATEGORY_DIMENSIONS, "ElectricDimsWhitelist", false, "true = ElectricDims is a whitelist (electric ONLY works there).").getBoolean(false);
+
+			cf.addCustomCategoryComment(CATEGORY_WRECKS, "Trains derail and wreck: taking curves too fast, running off the end of the track, crashing into other trains or "
+					+ "into walls. Speeds are the km/h the HUD shows. Rerailing Frogs put a derailed car back on the track; a Breakdown Crane stands up a "
+					+ "car on its side or cuts a write-off up for scrap.");
+			WRECK_ENABLED = cf.get(CATEGORY_WRECKS, "Enabled", true, "Trains can derail and wreck at all.").getBoolean(true);
+			WRECK_CURVE_LIMIT_G = cf.get(CATEGORY_WRECKS, "CurveLimitG", 1.0, "Sideways g a car takes on a curve before it derails (tank cars 15% less, locomotives 12% more). Lower = more realistic and stricter.", 0.2, 10).getDouble(1.0);
+			WRECK_WARN_FRACTION = cf.get(CATEGORY_WRECKS, "WarnFraction", 0.85, "From this fraction of the limit the wheels squeal, throw sparks and the driver is warned.", 0.3, 1).getDouble(0.85);
+			WRECK_COLLISION_KMH = cf.get(CATEGORY_WRECKS, "CollisionKmh", 15.0, "Closing speed at which two uncoupled trains that hit each other derail (x2.3 they turn over, x4.6 they're destroyed).", 1, 1000).getDouble(15);
+			WRECK_IMPACT_KMH = cf.get(CATEGORY_WRECKS, "ImpactKmh", 20.0, "Speed at which hitting something solid (a buffer stop, a wall) derails a car (x2.2 turns over, x4 destroyed).", 1, 1000).getDouble(20);
+			WRECK_OFFTRACK_TIP_KMH = cf.get(CATEGORY_WRECKS, "OffTrackTipKmh", 30.0, "Running off the end of the track: below this it just derails, above it turns over, above 3x it's destroyed.", 1, 1000).getDouble(30);
+			WRECK_BLOCK_DAMAGE = cf.get(CATEGORY_WRECKS, "BlockDamage", true, "A sliding wreck ploughs up soft blocks (plants, leaves, glass, fences, vanilla rails...).").getBoolean(true);
+			WRECK_EXPLOSIONS = cf.get(CATEGORY_WRECKS, "Explosions", true, "Destroyed trains carrying fuel / flammable liquids explode; steam boilers burst.").getBoolean(true);
+			WRECK_EXPLOSIONS_BREAK_BLOCKS = cf.get(CATEGORY_WRECKS, "ExplosionsBreakBlocks", false, "Those explosions also blow up blocks (off = they hurt and fling things but leave the terrain).").getBoolean(false);
+			WRECK_FIRE = cf.get(CATEGORY_WRECKS, "Fire", true, "Wrecked locomotives and spilled fuel burn and can set fire to things around them.").getBoolean(true);
+			WRECK_CARGO_SPILL = cf.get(CATEGORY_WRECKS, "CargoSpill", true, "Freight cars on their side spill their cargo; tank cars leak their liquid onto the ground.").getBoolean(true);
+			WRECK_RIDER_DAMAGE = cf.get(CATEGORY_WRECKS, "RiderDamage", true, "Riders are hurt (and thrown out when it turns over).").getBoolean(true);
+			WRECK_TOTALED_KEEPS_CART = cf.get(CATEGORY_WRECKS, "TotaledKeepsCart", false, "Breaking a destroyed train gives the train item back (off = it's scrap).").getBoolean(false);
 
 			/* General */
 			SOUNDS = cf.get(CATEGORY_GENERAL, "ENABLE_SOUNDS", true).getBoolean(true);

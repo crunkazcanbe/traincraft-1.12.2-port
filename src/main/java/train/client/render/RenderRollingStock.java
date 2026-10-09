@@ -1,5 +1,8 @@
 package train.client.render;
 
+import train.common.wreck.Wreck;
+import train.common.wreck.ItemRerailer;
+import train.common.wreck.ItemBreakdownCrane;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.block.BlockRailBase;
@@ -354,7 +357,20 @@ public class RenderRollingStock extends Render<EntityRollingStock> {
 		// Derailed (no track under the train): drop the body onto the ground and tip it over, so a
 		// train that ran off the end of the line reads as derailed instead of hovering at rail height.
 		// Live-tunable: derailDrop (blocks down), derailTilt (degrees of lean).
-		if (isDerailed(cart)) {
+		int wreckState = Wreck.state(cart);
+		if (wreckState != Wreck.OK) {
+			// A wreck (Wreck): the body sits down in the ballast and leans / lies on its side, turning
+			// about the outer rail it fell over, so a tipped car rests on its flank instead of spinning round its middle.
+			// Live-tunable: wreckDrop, wreckPivot (half the car's width), wreckLift (how high its flank rests).
+			float roll = Wreck.renderRoll(cart, time);
+			float pivot = Math.copySign(conf("wreckPivot", 0.75F), roll);
+			float wk = Math.min(1F, Math.abs(roll) / 90F);
+			GL11.glTranslatef(0.0F, -conf("wreckDrop", 0.45F) + wk * conf("wreckLift", 0.1F), 0.0F);
+			GL11.glTranslatef(0.0F, 0.0F, pivot);
+			GL11.glRotatef(roll, 1.0F, 0.0F, 0.0F);
+			GL11.glTranslatef(0.0F, 0.0F, -pivot);
+		}
+		else if (isDerailed(cart)) {
 			GL11.glTranslatef(0.0F, -conf("derailDrop", 1.0F), 0.0F);
 			GL11.glRotatef(conf("derailTilt", 8.0F), 1.0F, 0.0F, 0.0F);
 		}

@@ -1,5 +1,8 @@
 package train.common.api;
 
+import train.common.wreck.Wreck;
+import train.common.wreck.ItemRerailer;
+import train.common.wreck.ItemBreakdownCrane;
 import train.common.library.Info;
 
 import com.mojang.authlib.GameProfile;
@@ -151,14 +154,16 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	/**
 	 * New physics integration
 	 */
-	private double bogieShift = 0;
-	private boolean needsBogieUpdate;
+	public double bogieShift = 0;
+	public boolean needsBogieUpdate;
 	private boolean firstLoad = true;
 	public EntityBogie bogieLoco = null;
 	private double mountedOffset = -0.5;
 	public double posYFromServer;
 	private boolean shouldServerSetPosYOnClient = true;
 	private int clientTicks = 0;
+	/** derailment / wreck state (Wreck) */
+	public final Wreck.State wreck = new Wreck.State();
 
 	public EntityRollingStock(World world) {
 		super(world);
@@ -182,6 +187,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	}
 
 	public void initRollingStock(World world) {
+		Wreck.initWatch(this);
 		preventEntitySpawning = true;
 		isImmuneToFire = true;
 		//field_70499_f = false;
@@ -426,6 +432,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	@Override
 	public boolean attackEntityFrom(DamageSource damagesource, float i) {
 		if (world.isRemote || isDead) { return true; }
+        if (Wreck.onDamage(this, damagesource, i)) return false;   // fire / blasts derail, never delete a train
 		if (damagesource.getTrueSource() instanceof EntityPlayer && !damagesource.isProjectile()) {
 			if(this instanceof IPassenger){
 				if (canBeDestroyedByPlayer(damagesource)) return false;
@@ -798,6 +805,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 
 
 		if (world.isRemote) {
+			Wreck.clientTick(this);
 			soundUpdater();
 			clientTicks++;
 			//rotationYaw = (float) rotationYawClient;
@@ -855,6 +863,10 @@ public abstract class EntityRollingStock extends AbstractTrains {
 		prevPosX = posX;
 		prevPosY = posY;
 		prevPosZ = posZ;
+		if (wreck.state != Wreck.OK) {   // off the rails: it slides, ploughs and burns on its own
+			Wreck.tickWrecked(this);
+			return;
+		}
 
 		int i = MathHelper.floor((double)posX);
 		int j = MathHelper.floor((double)posY);
@@ -915,6 +927,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 
 
 		updateOnTrack(i, j, k, l);
+		if (wreck.state == Wreck.OK) Wreck.afterTrackMove(this);
 		// System.out.println(this.posY);
 
 		d6 = prevPosX - posX;
@@ -1324,6 +1337,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 			// Derailed (ran off the end of the track, or no track at all): grind to a stop within a
 			// couple of blocks instead of coasting on across the grass at rail height. This also
 			// beats the throttle, so a derailed loco can't drive itself around off the rails.
+			if (Wreck.offRail(this)) return;
 			motionX *= 0.6D;
 			motionZ *= 0.6D;
 			//moveMinecartOffRail(i,j,k);
@@ -1496,6 +1510,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	}
 
 	protected void moveOnTC90TurnRail(int i, int j, int k, double r, double cx, double cz) {
+		Wreck.onCurve(this, r, cx, cz);
 		//System.out.println("curve");
 		posY = j;
 		double cpx = posX - cx;
@@ -1593,6 +1608,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	}
 
 	private void moveOnTCCurvedSlope(int i, int j, int k, double r, double cx, double cz, int tilex, int tilez, int meta, double slopeHeight, double slopeAngle) {
+		Wreck.onCurve(this, r, cx, cz);
 		double newTilex = tilex;
 		double newTilez = tilez;
 		if (meta == 2) {
@@ -1805,6 +1821,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 		nbttagcompound.setBoolean("firstLoad", this.firstLoad);
 		nbttagcompound.setFloat("rotation", this.rotation);
 		nbttagcompound.setBoolean("brake", isBraking);
+		Wreck.save(this, nbttagcompound);
 	}
 
 	@Override
@@ -1822,6 +1839,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 		this.firstLoad = nbttagcompound.getBoolean("firstLoad");
 		this.rotation = nbttagcompound.getFloat("rotation");
 		this.isBraking = nbttagcompound.getBoolean("brake");
+		Wreck.load(this, nbttagcompound);
 	}
 
 	@SideOnly(Side.CLIENT)
@@ -1831,6 +1849,9 @@ public abstract class EntityRollingStock extends AbstractTrains {
 
 	@Override
 	public boolean processInitialInteract(EntityPlayer entityplayer, net.minecraft.util.EnumHand hand) {
+		net.minecraft.item.ItemStack wreckTool = entityplayer.getHeldItem(hand);
+		if (wreckTool.getItem() instanceof ItemRerailer || wreckTool.getItem() instanceof ItemBreakdownCrane)
+			return Wreck.useTool(this, entityplayer, wreckTool);
 		boolean superResult = super.processInitialInteract(entityplayer, hand);
 		if (superResult){
 			return true;
@@ -1948,6 +1969,7 @@ public abstract class EntityRollingStock extends AbstractTrains {
 	 */
 	@Override
 	public void applyEntityCollision(Entity par1Entity) {
+		if (!world.isRemote && par1Entity instanceof EntityRollingStock && Wreck.onCollision((EntityRollingStock) par1Entity, this)) return;
 		//System.out.println(par1Entity +" " +this.bogieLoco +" "+this.bogieUtility[0]);
 		//if(par1Entity instanceof EntityPlayer)return;
 		if (this.bogieLoco == null) return;

@@ -1,5 +1,6 @@
 package train.common.api;
 
+import train.common.wreck.Wreck;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraft.block.Block;
@@ -340,6 +341,7 @@ public abstract class AbstractWorkCart extends EntityRollingStock implements IIn
 		if (this.world.isRemote) {
 			return true;
 		}
+		if (Wreck.onDamage(this, damagesource, i)) return false;   // fire / blasts derail, never delete a train
 		if (this.canBeDestroyedByPlayer(damagesource) || damagesource.getTrueSource() == null) {
 			return false;
 		}

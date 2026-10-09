@@ -1423,3 +1423,6 @@ entity.tc.Loco Heavy Steam.name=Heavy Steam Locomotive
 itemGroup.Traincraft=Traincraft
 itemGroup.TraincraftTrains=Traincraft Trains
 tile.tc:traincraftTrack.name=Traincraft Track
+item.tc:rerailer.name=Rerailing Frogs
+item.tc:breakdown_crane.name=Breakdown Crane
+death.attack.trainWreck=%1$s was killed in a train wreck

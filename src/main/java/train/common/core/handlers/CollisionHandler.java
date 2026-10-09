@@ -1,5 +1,8 @@
 package train.common.core.handlers;
 
+import train.common.wreck.Wreck;
+import train.common.wreck.ItemRerailer;
+import train.common.wreck.ItemBreakdownCrane;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.item.EntityMinecart;
@@ -128,6 +131,8 @@ public class CollisionHandler {
 	 * Applies a velocity to each of the entities pushing them away from each other. Args: entity
 	 */
 	public void applyEntityCollisionVanilla(Entity par1Entity, EntityMinecart entityOne) {
+		if (!world.isRemote && par1Entity instanceof EntityRollingStock && entityOne instanceof EntityRollingStock
+				&& Wreck.onCollision((EntityRollingStock) entityOne, (EntityRollingStock) par1Entity)) return;
 		MinecraftForge.EVENT_BUS.post(new MinecartCollisionEvent(entityOne, par1Entity));
 		if (entityOne.getCollisionHandler() != null) {
 			entityOne.getCollisionHandler().onEntityCollision(entityOne, par1Entity);
@@ -210,6 +215,9 @@ public class CollisionHandler {
 		}
 
 		if (!this.world.isRemote) {
+			// uncoupled trains hitting each other hard enough derail / wreck (Wreck)
+			if (entity instanceof EntityRollingStock && entityOne instanceof EntityRollingStock
+					&& Wreck.onCollision((EntityRollingStock) entityOne, (EntityRollingStock) entity)) return;
 			if (!entityOne.getPassengers().contains(entity)) {
 
 				double var2 = entity.posX - entityOne.posX;

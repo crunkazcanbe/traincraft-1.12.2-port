@@ -1,5 +1,8 @@
 package train.common.api;
 
+import train.common.wreck.Wreck;
+import train.common.wreck.ItemRerailer;
+import train.common.wreck.ItemBreakdownCrane;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
@@ -626,6 +629,7 @@ public abstract class AbstractTrains extends EntityMinecart implements IEntityAd
 	public void dropCartAsItem(boolean isCreative) {
 		if (!isCreative && !itemdropped) {
 			itemdropped=true;
+			if (this instanceof EntityRollingStock && Wreck.dropScrapInstead((EntityRollingStock) this)) return;
 			for (ItemStack item : getItemsDropped()) {
 				if (item.getItem() instanceof ItemRollingStock){
 					ItemStack stack = ItemRollingStock.setPersistentData(item,this,this.getUniqueTrainID(),null);

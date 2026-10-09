@@ -1,5 +1,6 @@
 package train.common.api;
 
+import train.common.wreck.Wreck;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraftforge.fml.client.FMLClientHandler;
@@ -1456,6 +1457,7 @@ public abstract class Locomotive extends EntityRollingStock implements IInventor
     @Override
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         if (world.isRemote) { return true; }
+        if (Wreck.onDamage(this, damagesource, i)) return false;   // fire / blasts derail, never delete a train
         if (canBeDestroyedByPlayer(damagesource)) return true;
         super.attackEntityFrom(damagesource, i);
         setRollingDirection(-getRollingDirection());

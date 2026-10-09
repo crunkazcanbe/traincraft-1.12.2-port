@@ -45,6 +45,11 @@ public class RecipeHandler {
 		for (ItemStack ironingot : iron) {
 			GameRegistry.addShapedRecipe(new ResourceLocation("traincraft", "recipe_1"), (ResourceLocation) null, new ItemStack(BlockIDs.assemblyTableI.block, 1), "IPI", "S S", "SPS", Character.valueOf('I'), ironingot, Character.valueOf('P'), Blocks.PISTON, Character.valueOf('S'), Blocks.STONE);
 		}
+		// wreck recovery (train.common.wreck.Wreck): rerailing frogs and a breakdown crane
+		GameRegistry.addShapedRecipe(new ResourceLocation("traincraft", "rerailer"), (ResourceLocation) null, new ItemStack(ItemIDs.rerailer.item, 1), "P P", "IRI", "I I",
+				Character.valueOf('P'), Blocks.PISTON, Character.valueOf('I'), Items.IRON_INGOT, Character.valueOf('R'), Blocks.RAIL);
+		GameRegistry.addShapedRecipe(new ResourceLocation("traincraft", "breakdown_crane"), (ResourceLocation) null, new ItemStack(ItemIDs.breakdown_crane.item, 1), "IIL", "B L", "BPB",
+				Character.valueOf('I'), Items.IRON_INGOT, Character.valueOf('L'), Items.LEAD, Character.valueOf('B'), Blocks.IRON_BLOCK, Character.valueOf('P'), Blocks.PISTON);
 		GameRegistry.addShapedRecipe(new ResourceLocation("traincraft", "recipe_2"), (ResourceLocation) null, new ItemStack(BlockIDs.assemblyTableII.block, 1),  "GPG", "O O", "OPO", Character.valueOf('G'), Items.GOLD_INGOT, Character.valueOf('P'), Blocks.PISTON, Character.valueOf('O'), Blocks.OBSIDIAN );
 		GameRegistry.addShapedRecipe(new ResourceLocation("traincraft", "recipe_3"), (ResourceLocation) null, new ItemStack(BlockIDs.assemblyTableIII.block, 1),  "GPG", "DLD", "OPO", Character.valueOf('G'), Items.GOLD_INGOT, Character.valueOf('P'), Blocks.PISTON, Character.valueOf('D'), Items.DIAMOND, Character.valueOf('L'), Blocks.GLOWSTONE, Character.valueOf('O'), Blocks.OBSIDIAN );
 

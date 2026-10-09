@@ -3,6 +3,31 @@
 All notable changes to this port. Versions match the upstream Traincraft version plus a
 port suffix (`-alphaN` for the early test builds).
 
+## v4.5.0-1.12.2
+
+### Added
+- **Derailments and train wrecks.** Trains can now come off the rails:
+  - **Curves taken too fast** - sideways acceleration (speed squared / curve radius) against each car's limit; tank
+    cars slosh and go first, locomotives sit lower and hold on longest. From ~85% of the limit the wheels screech and
+    throw sparks and the driver gets a warning with the safe speed for that curve.
+  - **Running off the end of the track** (or a gap / a missing rail) while moving.
+  - **Collisions** between trains that aren't coupled (rear-end, head-on, ploughing into a wreck), and **hitting
+    something solid** (a buffer stop, a wall) hard.
+  - How bad depends on speed: **derailed** (wheels in the ballast, still upright), **turned over** (lying on its side)
+    or **destroyed** (a burning write-off). A derailed car uncouples, so the rest of the train keeps coming and piles
+    into it; fast wrecks drag their neighbours off too.
+  - A wreck slides and ploughs to a stop, tearing up soft blocks and hitting anything in the way. Riders are thrown
+    out and hurt (the riding Resistance no longer saves them). Freight on its side spills its cargo; tank cars split and
+    their load runs out onto the ground; anything carrying fuel or flammable liquid catches fire and can explode; a
+    steam locomotive on its side with its fire in bursts its boiler.
+  - Explosions and fire no longer make a train vanish into an item: a big blast knocks it off the rails or over.
+- **Recovery tools:** *Rerailing Frogs* put a derailed (upright) car back on the nearest track (it picks a spot where
+  the front bogie is on the rails too); a *Breakdown Crane* stands a car on its side back up, or cuts a destroyed one
+  up for scrap. Both take a few seconds and need you to stay close.
+- **`derailments` config section**: on/off, curve limit (g), warning threshold, collision / impact / off-track speeds,
+  block damage, explosions (and whether they break blocks), fire, cargo spill, rider damage, and whether a destroyed
+  train still drops its item.
+
 ## v4.4.5-1.12.2
 
 ### Fixed

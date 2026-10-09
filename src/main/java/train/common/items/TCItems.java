@@ -65,6 +65,8 @@ public class TCItems {
 		ItemIDs.helmet_suit_paintable.item = new ItemTCCompositeSuit(ItemIDs.helmet_suit_paintable.iconName, Traincraft.instance.armorCompositeSuit, Traincraft.trainCompositeSuit, 0, 0x1469d9);
 
 		ItemIDs.composite_wrench.item = new ItemWrench();
+		ItemIDs.rerailer.item = new train.common.wreck.ItemRerailer();
+		ItemIDs.breakdown_crane.item = new train.common.wreck.ItemBreakdownCrane();
 
 		ItemIDs.tcRailMediumTurn.item = new ItemTCRail(ItemTCRail.TrackTypes.MEDIUM_TURN);
 		ItemIDs.tcRailLargeTurn.item = new ItemTCRail(ItemTCRail.TrackTypes.LARGE_TURN);

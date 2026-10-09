@@ -1,5 +1,6 @@
 package train.common.api;
 
+import train.common.wreck.Wreck;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
@@ -385,6 +386,7 @@ public abstract class LiquidTank extends EntityRollingStock implements IFluidHan
 		if (world.isRemote) {
 			return true;
 		}
+		if (Wreck.onDamage(this, damagesource, i)) return false;   // fire / blasts derail, never delete a train
 		if (canBeDestroyedByPlayer(damagesource))
 			return true;
 		super.attackEntityFrom(damagesource, i);

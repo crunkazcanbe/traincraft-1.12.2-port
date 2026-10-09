@@ -1,5 +1,6 @@
 package train.common.api;
 
+import train.common.wreck.Wreck;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -33,6 +34,7 @@ public abstract class Freight extends EntityRollingStock implements IInventory {
 		if (this.world.isRemote) {
 			return true;
 		}
+		if (Wreck.onDamage(this, damagesource, i)) return false;   // fire / blasts derail, never delete a train
 		if(canBeDestroyedByPlayer(damagesource))return true;
 		super.attackEntityFrom(damagesource, i);
 		setRollingDirection(-getRollingDirection());

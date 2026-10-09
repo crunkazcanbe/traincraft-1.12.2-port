@@ -227,6 +227,8 @@ public enum ItemIDs {
 	reinforcedPlastic("ItemTrain", "item_fiberglass_plate", 10),
 	reinforcedPlates("ItemTrain", "item_reinforced_plate", 10),
 	composite_wrench("ItemWrench", "item_composite_wrench", 1),
+	rerailer("ItemRerailer", "item_rerailer", 1),
+	breakdown_crane("ItemBreakdownCrane", "item_breakdown_crane", 1),
 
 	minecartPassengerHighSpeedCarZeroED("ItemRollingStock", "train_high_speed_cart_zeroed", 14),
 	minecartNYTram("ItemRollingStock", "train_tram_ny", 7),

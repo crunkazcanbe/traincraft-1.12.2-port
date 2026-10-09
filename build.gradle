@@ -3,7 +3,7 @@ plugins {
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.2'
 }
 
-version = "4.4.5-1.12.2"
+version = "4.5.0-1.12.2"
 group = "traincraft"
 base { archivesName.set("Traincraft") }
 
