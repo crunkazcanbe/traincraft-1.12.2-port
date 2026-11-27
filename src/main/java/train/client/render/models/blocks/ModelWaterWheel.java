@@ -70,9 +70,10 @@ public class ModelWaterWheel extends ModelBase {
 			wheel -= (float) elapsed / 300.0f;
 			lastframe = now;
 			//System.out.println(facing);
-			if (waterWheel.getWaterDir() == 0 || waterWheel.getWaterDir() == -3 || waterWheel.getWaterDir() == -1 || waterWheel.getWaterDir() == 1 || waterWheel.getWaterDir() == -2) {
-				GL11.glRotatef(-(wheel + wheel1), 0F, 0F, 1F);
-			}
+			// issue #18: the spin used to be applied only to facings 0/1 (and the negative "unset" values), so wheels
+			// facing south/east (2/3) never animated. Every facing spins now; the facing rotation above already
+			// turned the model, so the local Z axis is always the wheel's axle.
+			GL11.glRotatef(-(wheel + wheel1), 0F, 0F, 1F);
 		}
 		this.render();
 		//GL11.glColor3f(1, 1, 1);

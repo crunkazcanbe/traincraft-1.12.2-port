@@ -58,6 +58,7 @@ public class CommonProxy implements IGuiHandler {
 
 		registerEvent(worldEvents);
 		registerEvent(chunkEvents);
+		registerEvent(new train.common.core.handlers.RiderSafetyHandler());   // issue #14
 		ForgeChunkManager.setForcedChunkLoadingCallback(Traincraft.instance, chunkEvents);
 
 	}

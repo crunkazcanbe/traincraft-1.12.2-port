@@ -299,7 +299,7 @@ public class RenderTCRail extends TileEntitySpecialRenderer {
 		if (n.contains("CROSSING")) {
 			modelTwoWaysCrossing.render(x, y, z);
 		} else if (n.contains("SLOPE")) {
-			String surface = n.contains("WOOD") ? "wood" : n.contains("GRAVEL") ? "gravel" : "ballast";
+			String surface = train.client.render.models.blocks.SlopeSurface.of(n, railTile);   // #15: snow + dynamic
 			if (n.contains("SUPER_LARGE") || n.contains("VERY_LARGE")) modelVeryLargeSlope.render(surface, railTile, x, y, z);
 			else if (n.contains("LARGE")) modelLargeSlope.render(surface, railTile, x, y, z);
 			else modelSlope.render(surface, railTile, x, y, z);

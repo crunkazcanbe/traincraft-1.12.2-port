@@ -66,6 +66,10 @@ public class ModelCETrack extends ModelBase {
             case 1: { GL11.glRotatef(180, 0, 1, 0); break; }
             case 2: { GL11.glRotatef(90, 0, 1, 0); break; }
         }
+        // issues #16/#17: the parallel-curve and curved-slope OBJs were authored a quarter turn off from the
+        // 45-degree turns this table was made for (facing west drew them to the south) - turn them back.
+        if (objName.startsWith("track_curve_parallel") || objName.startsWith("track_slope_curve"))
+            GL11.glRotatef(-90, 0, 1, 0);
         model(objName).renderAll();
     }
 }

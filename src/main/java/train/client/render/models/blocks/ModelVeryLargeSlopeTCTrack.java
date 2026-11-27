@@ -20,6 +20,13 @@ public class ModelVeryLargeSlopeTCTrack extends ModelBase {
 	}
 	
 	public void render(String type) {
+		if (SlopeSurface.isExtra(type)) {   // issue #15: snowy gravel / dynamic (block underneath)
+			Tessellator.bindTexture(SlopeSurface.texture(type));
+			modelVeryLargeSlopeBallast.renderAll();
+			Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + "track_normal.png"));
+			modeltrack.renderAll();
+			return;
+		}
 		if (type.equals("wood")) {
 			Tessellator.bindTexture(new ResourceLocation(Info.resourceLocation, Info.modelTexPrefix + "track_slope.png"));
 			modelVeryLargeSlopeWood.renderAll();

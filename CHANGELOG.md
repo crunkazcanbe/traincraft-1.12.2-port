@@ -3,6 +3,21 @@
 All notable changes to this port. Versions match the upstream Traincraft version plus a
 port suffix (`-alphaN` for the early test builds).
 
+## v4.5.1-1.12.2
+
+### Fixed
+- **Water wheels facing south or east didn't animate** (#18) - the spin was only applied for two of the four
+  directions. All four turn now.
+- **Snowy gravel slopes used the plain gravel texture** (#15) - 1x6, 1x12 and 1x18 snowy slopes now use snowy gravel.
+- **Dynamic slopes were always TC ballast** (#15/#16) - they now take the texture of the block under the slope's
+  first block.
+- **Parallel curves rendered at 90 degrees to the placement** (#17) - they now run the way you placed them.
+- **Curved slopes rendered at 90 degrees to the placement** (#16) - same fix as the parallel curves. (Their missing
+  slope supports are still being worked on.)
+- **Riders losing health in moving trains** (#14) - while seated in a Traincraft train you can no longer take
+  suffocation, fall or cramming damage (the seat sits low and the body bobs on curves/slopes, which set those off).
+  Any other damage a rider takes is written to the log once with its cause, so if it still happens the log says why.
+
 ## v4.5.0-1.12.2
 
 ### Added
